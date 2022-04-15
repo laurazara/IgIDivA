@@ -1,25 +1,35 @@
 library(RGenetics)
+library(data.table)
 
 get_nodes_aa_muts = function(nodes,germline){
+#the germline has to start at position 1
 germline = as.character(germline)
 nt_muts = unique(do.call(c,strsplit(nodes$Mutations[nodes$suppl_mu>=0],' ')))
 n_muts = length(nt_muts)
 n_nodes = nrow(nodes)
-mut_table = data.frame(nt_muts=nt_muts,from=character(n_muts),to=character(n_muts),pos=integer(n_muts),aa_pos=integer(n_muts),codon_start=integer(n_muts),aa_origin=character(n_muts),stringsAsFactors = FALSE)
+mut_table = data.table(nt_muts=nt_muts,from=character(n_muts),to=character(n_muts),pos=integer(n_muts),aa_pos=integer(n_muts),codon_start=integer(n_muts),aa_origin=character(n_muts),stringsAsFactors = FALSE)
+
 for (i in 1:n_muts){
   mut = strsplit(nt_muts[i],"")[[1]]
   l = length(mut)
+  
+  print(mut)
   pos = as.integer(paste(mut[2:(l-1)],collapse=""))
+  print(pos)
   aa_pos = floor((pos-1)/3+1)
-  codon_ind = 3*(aa_pos-1)+1
+  
+  # aa_pos = floor(pos / 3) + (pos %% 3)  
+  codon_ind = 3*(aa_pos-1)+1 
+  print(i)
   codon_o = germline[codon_ind:(codon_ind+2)]
+  #codon_o = unlist(codon_o)
   codon_o = paste(codon_o,collapse="")
   aa_o = codonToAAone(codon_o)
   
   mut_table$from[i] = mut[1]
   mut_table$to[i] = mut[l]
   mut_table$pos[i] = pos
-  mut_table$aa_pos[i] = aa_pos
+  mut_table$aa_pos[i] = aa_pos 
   mut_table$codon_start[i] = codon_ind
   mut_table$aa_origin[i] = aa_o
 }
@@ -78,14 +88,14 @@ get_aa_muts_weight = function(nodes,with_main_nt_variant=FALSE){
   }
   n_aa_muts = length(aa_muts)
   if (n_aa_muts>0){
-    aa_muts_weight = data.frame(aa_muts=aa_muts,n_reads=integer(n_aa_muts))
+    aa_muts_weight = data.table(aa_muts=aa_muts, seqs=integer(n_aa_muts))
     for (i in 1:n_aa_muts){
-      aa_muts_weight$n_reads[i] = sum(nodes$N[grepl(aa_muts[i],nodes$Mutations_aa,fixed=TRUE)])
+      aa_muts_weight$seqs[i] = sum(nodes$N[grepl(aa_muts[i],nodes$Mutations_aa,fixed=TRUE)])
     }
     aa_muts_weight = aa_muts_weight[
-      with(aa_muts_weight, order(n_reads,decreasing = TRUE)),
+      with(aa_muts_weight, order(seqs, decreasing = TRUE)),
       ]
   }
-  else {aa_muts_weight = data.frame(aa_muts=character(0),n_reads=integer(0))}
+  else {aa_muts_weight = data.table(aa_muts=character(0), seqs=integer(0))}
   return(aa_muts_weight)
 }
