@@ -1,3 +1,5 @@
+library(data.table)
+
 recursive_search = function(node_curr,edges,main_node,nodes_in_block){
   if (node_curr!=main_node){
     next_nodes = edges$from[edges$to==node_curr]
@@ -7,19 +9,18 @@ recursive_search = function(node_curr,edges,main_node,nodes_in_block){
     for (nn in next_nodes){
       nodes_in_block = append(nodes_in_block,recursive_search(nn,edges,main_node,nodes_in_block))
     }
-    return(unique(nodes_in_block))
+   
   }
-  else {
-    return(unique(nodes_in_block))
+  return(unique(nodes_in_block))
   }
-}
+
 
 get_main_block = function(nodes,edges){
   end_node = setdiff(edges$to,edges$from)
   end_node = setdiff(end_node,nodes$id[nodes$suppl_mu<1])
   num_block = length(end_node)
   main_node = nodes$id[nodes$suppl_mu==0]
-  block_table = data.frame(
+  block_table = data.table(
                    end_node=end_node,
                    most_relevant_pathway_score=double(num_block),
                    convergence_score=double(num_block),
