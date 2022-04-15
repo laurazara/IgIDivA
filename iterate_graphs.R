@@ -1,12 +1,16 @@
 source("id_network_analysis.R")
 
-iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE){
-  dir.create(save_path,showWarnings = FALSE)
+iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE,col_start = 5,col_end = 313,min_reads = 10,highly_sim_clonos = c(1),nodes_size_scaling = TRUE,include_aa_muts = TRUE){
+  output_path = paste0(save_path, "/Output")
+  dir.create(output_path,showWarnings = FALSE)
   args = data.table::fread(argument_file,
                            header = TRUE,
                            sep = "\t",
                            stringsAsFactors = FALSE)
+  
+  
   n = nrow(args)
+  # no_muts_df <- data.frame(sample_id=character(n))
   aa_muts_all = data.table()
   aa_muts_main_variant_all = data.table()
   metric_table = data.frame(
@@ -43,9 +47,13 @@ iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE)
       if (file.exists(error_file)){
         load(error_file)
         graph_info = id_and_error_type
+        # temp <- args$sample_id[i]
+        # temp <- as.data.frame(temp)
+        # colnames(temp) <- "sample_id"
+        # no_muts_df <- rbind(no_muts_df, temp)
       }
       else if (!file.exists(paste0(save_path,'/',args$sample_id[i]))){
-        graph_info = doGraph(args$highly_sim_clonos_file[i],args$grouped_alignment_file[i],args$sample_id[i],save_path=save_path,include_jump=include_jump)
+        graph_info = doGraph(args$highly_sim_clonos_file[i],args$grouped_alignment_file[i],args$sample_id[i],save_path=save_path,include_jump=include_jump,col_start = col_start, col_end = col_end, min_reads = min_reads, highly_sim_clonos = highly_sim_clonos, nodes_size_scaling = nodes_size_scaling, include_aa_muts = include_aa_muts)
       }
       else {
         graph_info = c(0/0,FALSE,FALSE,FALSE)
@@ -92,11 +100,20 @@ iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE)
     }
     
   }
-  write.table(metric_table, paste0(save_path,'/metric_table_all.txt'), sep = "\t", dec = ".",
+  write.table(metric_table, paste0(output_path,'/metric_table_all.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
-  write.table(aa_muts_all, paste0(save_path,'/aa_muts_weight.txt'), sep = "\t", dec = ".",
+  write.table(aa_muts_all, paste0(output_path,'/aa_muts_weight.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
-  write.table(aa_muts_main_variant_all, paste0(save_path,'/aa_muts_weight_main_variant.txt'), sep = "\t", dec = ".",
+  write.table(aa_muts_main_variant_all, paste0(output_path,'/aa_muts_weight_main_variant.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
+  
+  
+  discarded_samples <- data.table::fread(paste0(output_path,'/metric_table_all.txt'), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  discarded_samples <- na.omit(discarded_samples, invert=TRUE)
+  discarded_samples <- as.data.frame(discarded_samples$sample_id)
+  colnames(discarded_samples) <- "sample_id"
+  write.table(discarded_samples, paste0(output_path,"/discarded_samples_table.txt"), sep = "\t", dec = ".", 
+              row.names = FALSE, col.names = TRUE, quote = FALSE, append=FALSE)
+  
   return(metric_table)
 }
