@@ -1,10 +1,9 @@
 
-# load libraries ------------------------------------------------------------------------------------------------------------
+# load libraries ----------------------------------------------------------------
 
 library(data.table)
 library(stringr)
 library(dplyr)
-library(stringr)
 library(readxl)
 library(ggsci)
 library(tidygraph)
@@ -13,13 +12,14 @@ library(igraph)
 source('main_block_selection.R')
 source('amino_acids_mutation.R')
 
-# read input files and select parameters-------------------------------------------------------------------------------------
+# read input files ----------------------------------------------------------------
 
-doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save_path=getwd(),include_jump=TRUE){
-  col_start = 5
-  col_end = 313
+doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save_path=getwd(),include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
+  #for FR1 samples
+  #col_start=59
   cys_pre_cdr3_length = 3
-  min_reads = 10
+  col_pos1 = 5 #start position to begin directly from
+  #the sequence alignment
   
   save_path = paste0(save_path,'/',sample_id)
   dir.create(save_path,showWarnings = FALSE)
@@ -33,30 +33,49 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                                 header = TRUE, 
                                 sep = "\t", 
                                 stringsAsFactors = FALSE)
-  colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
-  
-  # find the germline -------------------------------------------------------------------------------------------------------
+  #colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
+  #for FR1
+  colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
+  # find the germline ---------------------------------------------------------------
   gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
   gene_max_N = gene_count$V.GENE.and.allele[which(gene_count$N==max(gene_count$N))]
   germline = alignment[which(alignment$V.GENE.and.allele==gene_max_N), ]
   germline = germline[which(germline$cluster_id == "-"), ]
   
   
-  # pre processing (filter grouped alignment by related clonotypes) ----------------------------------------------------------------------------------------------------------
-  related_clonos = high_sim[1, ]$prev_cluster
+  # pre processing ------------------------------------------------------------------
+  
+  related_clonos = high_sim[highly_sim_clonos, ]$prev_cluster
   related_clonos = stringr::str_squish(related_clonos)
   related_clonos = stringr::str_split(related_clonos, " ")
-  related_clonos = related_clonos[[1]]
-  related_clonos = c(related_clonos)
-  who = base::match(related_clonos, alignment$cluster_id)
-  alignment = alignment[which(alignment$cluster_id %in% related_clonos), ]
+  related_clonos_final = character(0)
+  for (i in 1:length(highly_sim_clonos)) {
+    related_clonos_temp = related_clonos[[i]]
+    related_clonos_temp = c(related_clonos_temp)
+    related_clonos_final = unique(append(related_clonos_final, related_clonos_temp))
+  }
+  alignment = alignment[which(alignment$cluster_id %in% related_clonos_final), ]
   joined_filtered = alignment[which(alignment$V.GENE.and.allele == germline$V.GENE.and.allele), ]
   
-  # select main nt var and its muts ---------------------------------------------------------------
+  # General calculations
+  number_related_clonos = length(related_clonos_final)
+  total_nt_variants = nrow(joined_filtered)
+  total_seqs = sum(joined_filtered$N)
+  singletons =  nrow(joined_filtered[which(joined_filtered$N == 1), ])
+  expanded_nt_vars = nrow(joined_filtered[which(joined_filtered$N != 1), ])
+  nonsingl = (joined_filtered[which(joined_filtered$N != 1), ])
+  expanded_seqs = sum(nonsingl$N)
+  N_main_nt_var = max(joined_filtered$N)
+  summary = data.table("Number_related_clonos" = number_related_clonos, "Number_nt_vars" = total_nt_variants, "Total_seqs"= total_seqs, "Singletons" = singletons, "Expanded_nt_vars" = expanded_nt_vars, "Expanded_seqs" = expanded_seqs, "N_main_nt_var" = N_main_nt_var)
+  write.table(summary, paste0(save_path,"/summary-calculations_",sample_id,".txt"), sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE, quote = FALSE)
+  
+  #Select main nt var and its muts ---------------------------------------------------------------
   main = joined_filtered[which.max(joined_filtered$N), ]
   main = main[, col_start:col_end]
   main = as.data.table(t(main))
-  main$pos = as.character(1:nrow(main))
+  #main$pos = as.character(1:nrow(main))
+  #For FR1
+  main$pos = as.character(colnames(alignment)[col_start:col_end])
   main_gaps = main[which(main$V1 == "."), ] 
   main = main[which( !(main$V1 %in% c("-", ".")) ), ]
   N_pos = col_end-col_start+1-nrow(main_gaps)+cys_pre_cdr3_length
@@ -66,10 +85,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     same_muts_as_main = joined_filtered
   }
   else{
-    temp = data.table(Mutations = paste(paste0(as.vector(unlist(germline[1, main$pos, with = FALSE])),                                               main$pos,
+    muts_main_nt_var = data.table(Mutations = paste(paste0(unlist(germline[,main$pos, with = FALSE]),                                               main$pos,
                                                main$V1), collapse = " "),
                       N = joined_filtered[which.max(joined_filtered$N), ]$N)
-    muts_main_nt_var = temp
+    
     who = mapply(function(x, y) { return(x == y) },
                  joined_filtered[, main$pos, with = FALSE],
                  main$V1)
@@ -77,21 +96,19 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     who = which(who)
     same_muts_as_main = joined_filtered[who, ]
   }
- 
-  # EXTRA MUTATIONS
+  #Extra mutations
   FR1toFR3 = same_muts_as_main[, -((col_end+1):ncol(same_muts_as_main))]
   to_count = FR1toFR3[, -(1:(col_start-1))] 
   to_count[to_count == "-"] = NA
   to_count[to_count == "."] = NA
-  count_Nt = rowSums(!is.na(to_count))
-  count_Nt = count_Nt - nrow(main)
+  #to_count[to_count == "n"] = NA
+  count_Nt = (rowSums(!is.na(to_count))) - nrow(main)
   same_muts_as_main$count_Nt = count_Nt
   not0 = same_muts_as_main[which(same_muts_as_main$count_Nt != 0), ]
-  
-  # try to find links with extra mutations  ---------------------------------------------------------------------------------
+  # TRY TO FIND LINKS IN THE SEQS WITH EXTRA MUTS --------------------------------------------------------------------
+  # with dataset
   extralinks = not0[which(not0$N != 1), ]
   extralinks$Mutations = NA
-  
   # get only the part of the alignment
   extralinks2 = extralinks[ ,col_start:col_end]
   # add the germline
@@ -126,8 +143,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                                         count_Nt = unique(count_Nt)), by = Mutations]
   # eliminate cases with less than min_reads reads -----------------------------------------------------------------
   extramutslinked = extramutslinked[which(extramutslinked$N >= min_reads), ]
-  
-  # error if no extra mutations
+  # Error if no extra mutations
   if (nrow(extramutslinked)==0){
     mess = sprintf('The sample %s does not contain any extra mutations. The analysis has been stopped.',as.character(sample_id))
     f=file(paste0(save_path,'/warning_message.txt'))
@@ -139,7 +155,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     save(id_and_error_type,file=paste0(save_path,'/id_and_error_type.Rda'))
     return(id_and_error_type)
   }
-  # error if maximal length of path is strictly smaller than 2
+  # Error if maximal length of path is strictly smaller than 2
   if (max(extramutslinked$count_Nt)<2){
     mess = sprintf('The sample %s does not contain any pathways of length 2 or more. The analysis has been stopped.',as.character(sample_id))
     f=file(paste0(save_path,'/warning_message.txt'))
@@ -153,7 +169,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   }
   # EXTRA MUTATIONS -----------------------------------------------------------------  
   extra_connections = find_extra_connection(extramutslinked,include_jump=include_jump)
-  if (length(extra_connections)==0){
+  if (nrow(extra_connections)==0){
     mess = sprintf('The sample %s does not contain any connected extra nodes. The analysis has been stopped.',as.character(sample_id))
     f=file(paste0(save_path,'/warning_message.txt'))
     writeLines(mess, f)
@@ -164,10 +180,45 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     save(id_and_error_type,file=paste0(save_path,'/id_and_error_type.Rda'))
     return(id_and_error_type)
   }
+  
+  #get ordered unique values of numbers of extra mutations
+  numbers2 = sort(unique(extramutslinked$count_Nt))
+  
+  #initiate all variables as empty lists
+  extramut =list()
+  extraseqs = list()
+
+  k=1
+  for(i in numbers2){
+    filterextramuts = filter(extramutslinked, count_Nt == i)
+    extramut[k] = filterextramuts %>% distinct(filterextramuts$Mutations) %>% nrow()  #-1 to not count the reference
+    print(paste0(i, " extra muts = ", extramut[k]))
+    extraseqs[k] = sum(filterextramuts$N, na.rm=TRUE) 
+    print(paste0(i, " extra muts seqs = ", extraseqs[k]))
+    k=k+1
+    }
+  
+  extramutations = as.data.table(numbers2)
+  extramutations$nt_var = as.character(extramut)
+  extramutations$seqs = as.character(extraseqs)
+  
+  colnames(extramutations)[1]="#mutations"
+
+  write.table(extramutations, paste0(save_path,"/extra_mutations_calculations_",sample_id,".txt"), sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE, quote = FALSE)
+  
   # LESS MUTATIONS -----------------------------------------------------------------
   if (identity<1){
     less_expanded = get_less_mutations(joined_filtered,germline2,main,min_reads,col_start,col_end)
-  }
+    if(nrow(less_expanded)== 0){
+      less_expanded = c()
+    }
+    else{
+    less_expanded2 = less_expanded[,2:3]
+    less_expanded2 = aggregate(less_expanded2$N, by=list(less_expanded2$suppl_mut), FUN=sum)
+    colnames(less_expanded2)[1]="#mutations"
+    colnames(less_expanded2)[2]="N"
+    write.table(less_expanded2, paste0(save_path,"/less_muts_calculations_",sample_id,".txt"), sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE, quote = FALSE)
+  }}
   else{
     less_expanded = c()
   }
@@ -179,10 +230,9 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   evolution[which(suppl_mut < 0), ]$level = "less"
   evolution[which(suppl_mut > 0), ]$level = "additional"
   evolution$Mutations = str_squish(evolution$Mutations)
-  write.table(evolution,paste0(save_path,"/evolution-file-",sample_id,"_threshold",min_reads,".txt"), row.names = FALSE, quote = FALSE)
+  write.table(evolution,paste0(save_path,"/evolution-file-",sample_id,"_threshold",min_reads,".txt"), sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE, quote = FALSE)
   evolution = evolution[,c("Mutations", "suppl_mut", "level", "N"), with = FALSE]
   evolution = unique(evolution)
-  
   # create adjacency matrix -----------------------------
   evolution = evolution[which(!is.na(evolution$Mutations)), ]
   mutation_pos = str_split(evolution$Mutations, " ")
@@ -206,11 +256,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   adjacency$suppl_mu_t = evolution[who, ]$suppl_mut
   adjacency$length_t = unlist(lapply(str_split(adjacency$to, " "), length))
   adjacency$n_reads_t = evolution[who, ]$N
-  
   # keep evolution connections -------------------
   adjacency = adjacency[which( adjacency$suppl_mu_f < adjacency$suppl_mu_t ), ]
-  who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0)
-  adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t
+  #who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0)
+  #adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t
   if (include_jump){
     adjacency = adjacency[which(adjacency$suppl_mu_f==0 | adjacency$diff_n == (adjacency$length_t - adjacency$length_f) | (adjacency$suppl_mu_f<0 & adjacency$suppl_mu_t <= 0)), ]
     ind2keep = logical(nrow(adjacency))
@@ -228,10 +277,9 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     adjacency = adjacency[which(adjacency$diff_n <= 1), ]
     adjacency = adjacency[which(abs(adjacency$suppl_mu_f - adjacency$suppl_mu_t) <= 1), ]
   }
-  
   # create connection matrix --------------------
-  edges = adjacency[which((adjacency$diff_n != 0) | (adjacency$from == adjacency$to)), ]
-  edges = edges[which(edges$suppl_mu_f <= edges$suppl_mu_t), ]
+  #edges = adjacency[which((adjacency$diff_n != 0) | (adjacency$from == adjacency$to)), ]
+  edges = adjacency[which(adjacency$suppl_mu_f <= adjacency$suppl_mu_t), ]
   edges = edges[order(suppl_mu_f), ]
   edges = edges[which(edges$from != edges$to), ]
   who = which(!(edges$to %in% edges$from) & edges$suppl_mu_t < 0)
@@ -252,7 +300,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   edges$to = nodes[who,]$id
   
   edges = edges[, c("from", "to"), with = FALSE]
-  graph_info = data.frame(
+  graph_info = data.table(
     sample_id=sample_id,
     main_nt_var_identity=round(identity*100,2),
     convergence_score= double(1),
@@ -280,11 +328,12 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   graph_info$max_path_length = max(block_table$path_length)
   write.table(block_table, paste0(save_path,'/block_table_',sample_id,'.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
-  nodes = get_nodes_aa_muts(nodes,germline2)
+  # nodes = get_nodes_aa_muts(nodes,germline2)
+  nodes = get_nodes_aa_muts(nodes,germline[,col_pos1:col_end])
   aa_muts_weight = get_aa_muts_weight(nodes)
   aa_muts_weight_main_variant = get_aa_muts_weight(nodes,with_main_nt_variant=TRUE)
-  nodesO = nodes
-  edgesO = edges
+  #nodesO = nodes
+  #edgesO = edges
   if (nrow(aa_muts_weight)>0){
     write.table(aa_muts_weight, paste0(save_path,'/aa_muts_weight_',sample_id,'.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
@@ -293,9 +342,9 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     write.table(aa_muts_weight_main_variant, paste0(save_path,'/aa_muts_weight_main_variant_',sample_id,'.txt'), sep = "\t", dec = ".",
               row.names = FALSE, col.names = TRUE,quote = FALSE)
   }
-  save(nodesO,file=paste0(save_path,'/nodes_all_',sample_id,'.Rda'))
-  save(edgesO,file=paste0(save_path,'/edges_all_',sample_id,'.Rda'))
-  edges = select_main_block(block_table,nodesO,edgesO,ind2take=1,include_max_extra_muts=TRUE,include_max_path_length=TRUE)
+  save(nodes,file=paste0(save_path,'/nodes_all_',sample_id,'.Rda'))
+  save(edges,file=paste0(save_path,'/edges_all_',sample_id,'.Rda'))
+  edges = select_main_block(block_table,nodes,edges,ind2take=1,include_max_extra_muts=TRUE,include_max_path_length=TRUE)
   nodes = as.data.frame(edges[1])
   edges = as.data.frame(edges[2])
   save(nodes,file=paste0(save_path,'/nodes_graph_',sample_id,'.Rda'))
@@ -347,24 +396,70 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   
   options(ggrepel.max.overlaps = Inf)
   rr = which(nodes$suppl_mu==min(nodes$suppl_mu))
-  ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
-    geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
-                   start_cap = circle(2, 'mm'),
-                   end_cap = circle(3, 'mm'),
-                   alpha = 0.1) + 
-    geom_node_point(aes(size = log10(N),
-                        color = as.factor(suppl_mu)),
-                    alpha = 0.7) +
-    geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=2,check_overlap=FALSE) +
-    scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE) +
-    theme(panel.background = element_blank(),
-          legend.background = element_blank())
+  if (nodes_size_scaling) {
+    if (include_aa_muts) {
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+                      start_cap = circle(2, 'mm'),
+                      end_cap = circle(3, 'mm'),
+                      alpha = 0.1) + 
+        geom_node_point(aes(size = log10(N),
+                          color = as.factor(suppl_mu)),
+                      alpha = 0.7) +
+        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=2,check_overlap=FALSE) +
+        scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
+        theme(panel.background = element_blank(),
+              legend.background = element_blank()) +
+        labs(subtitle = paste("Graph Network", sample_id))
+    }
+    else {
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+                       start_cap = circle(2, 'mm'),
+                       end_cap = circle(3, 'mm'),
+                       alpha = 0.1) + 
+        geom_node_point(aes(size = log10(N),
+                            color = as.factor(suppl_mu)),
+                        alpha = 0.7) +
+        scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
+        theme(panel.background = element_blank(),
+              legend.background = element_blank()) +
+        labs(subtitle = paste("Graph Network", sample_id))
+    }
+  }
+  else {
+    if (include_aa_muts) {
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+                      start_cap = circle(2, 'mm'),
+                      end_cap = circle(3, 'mm'),
+                      alpha = 0.1) + 
+        geom_node_point(aes(color = as.factor(suppl_mu)),
+                        alpha = 0.7) +
+        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=2,check_overlap=FALSE) +
+        scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
+        theme(panel.background = element_blank(),
+              legend.background = element_blank()) +
+        labs(subtitle = paste("Graph Network", sample_id))
+    }
+    else {
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+                       start_cap = circle(2, 'mm'),
+                       end_cap = circle(3, 'mm'),
+                       alpha = 0.1) + 
+        geom_node_point(aes(color = as.factor(suppl_mu)),
+                        alpha = 0.7) +
+        scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
+        theme(panel.background = element_blank(),
+              legend.background = element_blank()) +
+        labs(subtitle = paste("Graph Network", sample_id))
+    }
+  }
   ggsave(paste0(save_path,'/',sample_id,'_ID.pdf'), width = 9.0, height = 9.0, units="in")
-  
   #start graph metrics calculation -----------------------------
   d = degree(tidy_net, mode = "all", loops = FALSE, normalized = FALSE)
   avg_degree = mean(d)
-  degree_distrib = degree.distribution(tidy_net, cumulative = FALSE)
   avg_dist = mean_distance(tidy_net, 
                            directed = TRUE,
                            unconnected = TRUE)
@@ -390,6 +485,7 @@ find_extra_connection = function(extramutslinked,include_jump=TRUE){
   max_extra_muts = max(extramutslinked$count_Nt)
   if (include_jump){
     max_jump = max_extra_muts
+    
   }
   else{
     max_jump = 1
@@ -425,14 +521,15 @@ find_extra_connection = function(extramutslinked,include_jump=TRUE){
   }
   extra_connections = rbindlist(extra_connections)
   extra_connections = unique(extra_connections)
-  if (length(extra_connections)>0){
+  if (nrow(extra_connections)>0){
     extra_connections = extra_connections[order(suppl_mut,-N,Mutations),]
   }
   return(extra_connections)
 }
 
 get_less_mutations = function(joined_filtered,germline2,main,min_reads=10,col_start=5,col_end=313){
-    jfnc = joined_filtered[,-((col_end+1):ncol(joined_filtered))]
+  # joined filtered no CDR3
+  jfnc = joined_filtered[,-((col_end+1):ncol(joined_filtered))]
   who = colnames(jfnc)[which(!(colnames(jfnc) %in% main$pos))]
   jfnc_not_main = jfnc[, who, with = FALSE]
   jfnc_not_main = jfnc_not_main[, col_start:ncol(jfnc_not_main)]
@@ -475,3 +572,5 @@ get_less_mutations = function(joined_filtered,germline2,main,min_reads=10,col_st
   less_expanded = less_expanded[order(suppl_mut,-N,Mutations),]
   return(less_expanded)
 }
+
+
