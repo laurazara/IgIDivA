@@ -406,7 +406,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
         geom_node_point(aes(size = log10(N),
                           color = as.factor(suppl_mu)),
                       alpha = 0.7) +
-        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=2,check_overlap=FALSE) +
+        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=4,check_overlap=FALSE) +
         scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
         theme(panel.background = element_blank(),
               legend.background = element_blank()) +
@@ -436,7 +436,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                       alpha = 0.1) + 
         geom_node_point(aes(color = as.factor(suppl_mu)),
                         alpha = 0.7) +
-        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=2,check_overlap=FALSE) +
+        geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=4,check_overlap=FALSE) +
         scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
         theme(panel.background = element_blank(),
               legend.background = element_blank()) +
