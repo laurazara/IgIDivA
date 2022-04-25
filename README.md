@@ -35,3 +35,8 @@ install.packages("ggpubr")
 install.packages("rstatix")
 
 ```
+
+All the folders need to be downloaded in the same folder, and the input should be saved in a folder called `Input`
+
+## Launching the app
+To run the app, open the script `app.R` in your `R` session and press the button `Run App`. 
