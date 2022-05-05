@@ -9,7 +9,6 @@ library(DT)
 library(bslib)
 library(shinyhelper)
 source("generate_input_path.R")
-# source("iterate_graphs.R")
 source("iterate_graphs.R")
 source("statistical_analysis.R")
 
