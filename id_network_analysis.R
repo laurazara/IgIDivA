@@ -34,8 +34,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                                 sep = "\t", 
                                 stringsAsFactors = FALSE)
   #colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
-  #for FR1
-  colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
+   colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
   # find the germline ---------------------------------------------------------------
   gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
   gene_max_N = gene_count$V.GENE.and.allele[which(gene_count$N==max(gene_count$N))]
@@ -74,7 +73,6 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   main = main[, col_start:col_end]
   main = as.data.table(t(main))
   #main$pos = as.character(1:nrow(main))
-  #For FR1
   main$pos = as.character(colnames(alignment)[col_start:col_end])
   main_gaps = main[which(main$V1 == "."), ] 
   main = main[which( !(main$V1 %in% c("-", ".")) ), ]
