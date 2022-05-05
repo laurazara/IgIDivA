@@ -5,24 +5,6 @@ library(ggsci)
 library(ggpubr)
 library(rstatix)
 
-# rm(list = ls())
-# gc()
-# 
-# 
-# groups_file = "SampleGroups3.txt"
-# final_metric_table = "metric_table_all.txt"
-# comparison_metrics = c(
-#     "convergence_score", 
-#     "end_nodes_density", 
-#     "max_path_length", 
-#     "max_muts_length", 
-#     "avg_degree", 
-#     "avg_distance"
-# )
-# compare_by = "group_name"
-# p_threshold = 0.05
-# adjust = "no"
-
 perform_statistical_analysis <- function(
     groups_file, 
     final_metric_table, 
