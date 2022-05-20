@@ -9,6 +9,7 @@ Functions for an `R` command-line use are also available.
 
 ## Installation
 The `IgIDivA` scripts can be freely downloaded [here](https://github.com/laurazara/IgIDivA).
+It requires `R` (version "4.1"), which can be installed on any operating system from [CRAN](https://cran.r-project.org/).
 All the packages that need to be installed in your `R` session are the following:
 
 ```r
