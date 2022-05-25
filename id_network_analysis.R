@@ -397,10 +397,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   if (nodes_size_scaling) {
     if (include_aa_muts) {
       ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
-        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+        geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                       start_cap = circle(2, 'mm'),
                       end_cap = circle(3, 'mm'),
-                      alpha = 0.1) + 
+                      alpha = 0.4) + 
         geom_node_point(aes(size = log10(N),
                           color = as.factor(suppl_mu)),
                       alpha = 0.7) +
@@ -412,10 +412,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     }
     else {
       ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
-        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+        geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                        start_cap = circle(2, 'mm'),
                        end_cap = circle(3, 'mm'),
-                       alpha = 0.1) + 
+                       alpha = 0.4) + 
         geom_node_point(aes(size = log10(N),
                             color = as.factor(suppl_mu)),
                         alpha = 0.7) +
@@ -428,10 +428,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   else {
     if (include_aa_muts) {
       ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
-        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+        geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                       start_cap = circle(2, 'mm'),
                       end_cap = circle(3, 'mm'),
-                      alpha = 0.1) + 
+                      alpha = 0.4) + 
         geom_node_point(aes(color = as.factor(suppl_mu)),
                         alpha = 0.7) +
         geom_node_text(aes(label = Mutations_aa), repel=TRUE,size=4,check_overlap=FALSE) +
@@ -442,10 +442,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
     }
     else {
       ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
-        geom_edge_link(arrow = arrow(length = unit(1, 'mm')),
+        geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                        start_cap = circle(2, 'mm'),
                        end_cap = circle(3, 'mm'),
-                       alpha = 0.1) + 
+                       alpha = 0.4) + 
         geom_node_point(aes(color = as.factor(suppl_mu)),
                         alpha = 0.7) +
         scale_color_manual(name = "Extra mutations", values=color_values,drop=TRUE,limits=force) +
