@@ -203,7 +203,7 @@ ui <- fluidPage(
       
       br(),
       
-      tags$b("Second column determines the name of the group each sample belongs to. Default name is 'name' but can be changed below."),
+      tags$b("Second column includes the name of the group that each sample belongs to. Default name is 'group_name' but it can be changed below."),
       
       br(),
       
