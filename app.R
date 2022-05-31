@@ -212,7 +212,7 @@ ui <- fluidPage(
       br(),
       br(),
       
-      textInput("groups_name", "Enter the name you chose for the second column:", value = "group_name", placeholder = "Enter column name"),
+      textInput("groups_name", "Enter the chosen name for the second column:", value = "group_name", placeholder = "Enter column name"),
       
       br(),
       
