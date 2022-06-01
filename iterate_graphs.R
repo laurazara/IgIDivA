@@ -64,10 +64,10 @@ iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE,
         type_error = as.logical(graph_info[2:length(graph_info)])
         names(type_error) = names(graph_info[2:length(graph_info)])
         if (type_error[1]){
-          metric_table$max_muts_length[i] = 0
+          metric_table$max_muts_length[i] = NA
         }
         else if (type_error[2]){
-          metric_table$max_muts_length[i] = 1
+          metric_table$max_muts_length[i] = NA
         }
         if (any(type_error)){
           metric_table$error_type[i] = names(type_error)[which(type_error)]
