@@ -33,7 +33,7 @@ perform_statistical_analysis <- function(
   
   # read inputs -------------------------------------
     
-    if(file.exists("groups_file")){
+    if(file.exists(groups_file)){
         sample_metadata = fread(
             groups_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE
         )
