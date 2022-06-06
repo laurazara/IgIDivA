@@ -1,0 +1,344 @@
+---
+title: "IgIDivA"
+author: "Laura Zaragoza-Infante"
+date: "20/5/2022"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+<style>
+<!-- h1, h2, h3, h4 { -->
+<!--   color:#17247a; -->
+<!-- } -->
+
+strong {
+    color:#eb6b1c;
+}
+
+</style>
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+    comment = "#>",
+    error = FALSE,
+    warning = FALSE,
+    message = FALSE,
+    crop = NULL
+)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+`IgIDivA` (Immunoglobulin Intraclonal Diversification Analysis) is a purpose-built tool for the analysis of the intraclonal diversification process using high-throughput sequencing data.  
+It is written in [shiny](https://shiny.rstudio.com/). Every step of the analysis can be performed interactively, thus not requiring any programming skills.  
+It takes as input the output files "clonotypes_computation" and "grouped_alignment_nt" from the [`tripr`](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler) package.  
+Functions for an `R` command-line use are also available.
+
+## Installation
+The `IgIDivA` scripts can be freely downloaded [here](https://github.com/laurazara/IgIDivA).
+It requires `R` (version "4.1"), which can be installed on any operating system [e.g., Linux, Windows, MacOS] from [CRAN](https://cran.r-project.org/). Installation with Docker will be available in the coming future.
+
+All the packages that need to be installed in your `R` session are the following:
+
+```r
+install.packages("shiny")
+install.packages("shinyFiles")
+install.packages("fs")
+install.packages("pdftools")
+install.packages("purrr")
+install.packages("DT")
+install.packages("bslib")
+install.packages("shinyhelper")
+install.packages("data.table")
+install.packages("stringr")
+install.packages("RGenetics")
+install.packages("dplyr")
+install.packages("ggsci")
+install.packages("tidygraph")
+install.packages("ggraph")
+install.packages("igraph")
+install.packages("ggplot2")
+install.packages("ggpubr")
+install.packages("rstatix")
+
+```
+
+All the scripts from `IgIDivA` need to be downloaded in the same folder. All the input files should also be stored in a folder.
+
+# Running `IgIDivA` as a `shiny` application
+
+In order to start the `shiny` app, please open the script `app.R` in your `R` session and press the button `Run App`.  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "run_app.png")
+```
+
+## Import data
+
+In this tab users can import their data by selecting the directory where the data is stored, by pressing the **Choose input directory** button. 
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "upload_data_tab3.png")
+```
+  
+  
+The tool takes as input for each sample the [`tripr`](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler) output files "highly similar clonotype
+computation" and "grouped alignment nt",  in text format (.txt).  
+The input folder is selected:
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "select_input.png")
+```
+  
+Once the Input folder has been selected, users should verify it by pressing the button **Upload**.
+Then users can choose which samples from the Input folder they want to include in the analysis.
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "choose_samples3.png")
+```
+  
+Users should subsequently verify it by pressing the button **Verify**.
+
+### Including groups to compare (optional)
+In order to make comparisons between groups of samples, the user needs to create a `tab-delimited` file with two columns.  
+The first column should be named "sample_id" and should include the names of the samples.  
+The second column should include the name of the group that each sample belongs to. By default the name of the column is "group_name", but it can be modified
+in the **Enter the name chosen for the second column** button.  
+
+```{r}
+groups = data.table::fread("SampleGroups.txt", header = TRUE,
+                               sep = "\t",
+                               stringsAsFactors = FALSE)
+head(groups)
+```
+  
+Once created, the file can be uploaded through the **Browse** button. When it is uploaded, a message "Upload completed" will appear.  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "upload_groups.png")
+```
+  
+## Set Parameters
+
+There are different parameters that can be applied:  
+
+- __Enter starting column__: <br/>
+    From the Grouped Alignment file, choose which column corresponds to the beginning of the sequence. If the experimental procedure amplifies the whole
+    immunoglobulin with, for example, leader primers, the starting column should be 5 [the initial 4 columns of the file contain additional information].
+    If the experimental procedure uses primers that bind in a more downstream position, the starting column should be changed [for example, for primers binding to the FR1 region of the immunoglobulin, the starting column position could be 59]. The default is position 5.  
+- __Enter ending column__: <br/>
+    From the Grouped Alignment file, choose which column corresponds to the end of the sequence [the end of the FR3 region]. The default is position 313.  
+- __Enter threshold minimum reads for the nodes__: <br/>
+    Choose the minimum number of reads that need to be part of a nucleotide variant (node) for it to be considered in the analysis. The default is 10.  
+- __Enter p-value threshold__: <br/>
+    For the metrics comparison between groups of samples, choose the p-value threshold for a comparison to be considered as statistically significant.The default is 0.05.  
+- __Do you want the p-values to be adjusted?__: <br/>
+    Choose between p-value or adjusted p-value. The default is not-adjusted.  
+    
+    
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "set_parameters.png")
+```  
+  
+- __Clonotypes to be taken into account for the analysis__: <br/>
+    Choose the clonotypes to be included in the analysis. One approach would be, for example, to include the first [the most frequent] clonotype.
+    If more than one clonotype is selected, their indexes have to be separated by comma. The default is 1.  
+    
+    
+    ```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "choose_clonotypes.png")
+    ```  
+  
+  
+### Parameters: processing  
+
+There are different options for the analysis that can be selected:  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "parameters_first.png")
+```  
+  
+- __Summary tables__: <br/>
+    Tables with summary information [regarding nucleotide variants, sequences, mutational level,...] will be produced throughout the process. 
+- __Jumps between non-adjacent nodes__: <br/>
+    If selected, jumps are allowed and nt vars with common SHMs differing by two or more SHMs will be included.
+- __Amino-acid mutations__: <br/>
+    The analysis will include the analysis of SHMs at the amino acid level. Replacement mutations will be shown in the graph and tables with the replacement mutations will be produced.
+- __Size scaling of nodes proportional to reads__: <br/>
+    If selected, the size of the nodes of the graph networks will be proportional to the number of reads of the respective nucleotide variants.
+- __Graph metrics__: <br/>
+    For each sample, different graph metrics will be calculated (description of the metrics below).
+- __Graph networks__: <br/>
+    For each sample, a graph network representing the intraclonal diversification will be produced.
+- __Metrics comparison__: <br/>
+    If the above **Graph metrics** option is selected, there is the option of performing metrics comparison between different groups of samples.
+  
+
+### Parameters: metrics  
+
+There are different metrics [or related calculations] that can be calculated for the description and determination of the intraclonal diversification level:  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "metrics.png")
+```  
+  
+
+- __Main variant identity__: <br/>
+    Percentage (%) of identity of the main nucleotide variant with its respective germline.
+- __Relative convergence (reads)__: <br/>
+    Graph metric "convergence score". Ratio of the number of sequences of the most relevant pathways to the number of sequences of the main nucleotide variant. It shows the tendency for the BcR IG sequences to accumulate in the main nt var or to acquire additional convergent SHMs.
+- __Most relevant pathway score__: <br/>
+    Each block of pathways that leads to a particular end node gets a score based on the ratio of the total number of sequences of the nodes forming that block of pathways to the total number of sequences of all the nodes of the network with more SHMs than the main nt var. The block with the highest score is the most relevant pathway, the one that will be used for the calculation of the relative convergence, the convergence score.
+- __Most relevant pathway score (nodes)__: <br/>
+    Number of nodes of the most relevant pathway.
+- __End nodes density__: <br/>
+    Graph metric.Ratio of the number of end nodes to the number of nucleotide variants with additional SHMs. It shows the randomness or specificity of the mutational path.
+- __Max path length__: <br/>
+    Graph metric. Number of levels of additional SHMs. It shows the complexity of the mutational pathways.
+- __Max mutations path length__: <br/>
+    Graph metric "maximal mutational length". Maximum level of additional SHMs. It shows the complexity of the mutational pathway, allowing non-consecutive SHMs.
+- __Total reads__: <br/>
+    Total number of reads of the sample.
+- __Average degree__: <br/>
+    Graph metric. Average total number of connections of each nucleotide variant. It shows the complexity and connectivity of the mutational pathways.
+- __Average distance__: <br/>
+    Graph metric. Average number of steps along the shortest pathways between each pair of nucleotide variants.
+  
+Then, it is possible to choose, among the graph metrics, which one(s) to use to perform comparisons between groups of samples.
+  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "parameters_second.png")
+```  
+  
+Once all the parameters have been selected, the button **Start** must be pressed. A bar will show how much of the analysis has been completed.
+
+  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "start_button.png")
+``` 
+  
+The button **Reset** can be used to start a new analysis, resetting the parameters and the output results.
+  
+  
+
+## Visualize Results  
+
+When the analysis is finished, the **Visualize Results** tab will become active.
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "visualiza_results.png")
+```
+  
+It shows all the different output results and it offers the possibility of selecting them and choosing which sample to visualize.
+
+#### Summary Calculations  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "summary_calculations_H33.png")
+```
+  
+For each sample, it shows the number of related clonotypes [clonotypes with the same IGV gene and very similar CDR3] considered for the analysis, the number of nucleotide variants included, the total number of sequences, the number of singletons [nucleotide variants constituted by only one sequence], number of expanded nucleotide variants [nucleotide variants constituted by more than 1 sequence], number of sequences belonging to expanded nucleotide variants, and the number of reads of the main nucleotide variant.
+
+#### Extra Mutations Calculations  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "extra_mutations_H33.png")
+```
+  
+For each sample, it shows the number of nt vars with additional SHMs for each given number of SHMs, as well as the total number of sequences. It includes the total number of nt vars and sequences.  
+
+#### Less Mutations Calculations  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "less_mutations_H33.png")
+```
+  
+For each sample, it shows the number of sequences lacking SHMs of the main nt var, for each different number of SHMs.  
+
+#### Mutations
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "evolution_AMRMES.png")
+```
+  
+For each sample, it provides information for all unique SHMs or combinations of SHMs of all the nt vars that are part of the connected graph network. It also shows the number of SHMs in comparison to the germline, the number of sequences with those SHMs and the mutational level to which they belong. The mutational level is “less” if they have fewer SHMs than the main nt var, “main” for the SHMs of the main nt var, and “additional” for the cases with more SHMs than the main nt var.  
+
+#### Amino-acid Mutations Main Variant  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "aa_muts_main_nt_var_H33.png")
+```
+  
+It provides information of the replacement SHMs in the main nt var of each sample, together with the number of sequences carring each mutation.  
+
+#### Gobal Amino-acid Mutations Main Variant  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "global_aa_muts_main_nt_var.png")
+```
+  
+It contains all identified replacement SHMs in the main nt var of all the samples. It can be used to identify mutational patterns among samples.  
+ 
+
+#### Amino-acid Mutations  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "aa_muts_extra_H33.png")
+```
+  
+It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var].  
+
+#### Global Amino-acid Mutations  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "global_aa_muts_extra.png")
+```
+  
+It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var] for all the samples. It can be used to identify mutational patterns among samples.  
+
+#### Graph Metrics  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "graph_metrics_H33.png")
+```
+  
+For each sample, it contains the germline identity %, the values of the graph metrics as well as information related to those metrics.  
+
+#### Global Graph Metrics  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "global_graph_metrics.png")
+```
+  
+It shows the graph metrics values for all the samples. If a sample has been discarded, the cause is provided.  
+
+#### Graph Networks  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "graph_network_H33.png")
+```
+  
+For each sample, it shows the graph network.  
+
+
+
+  
+#### Metrics comparison  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "convergence_score.png")
+```
+  
+ 
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "average_distance.png")
+```
+  
+If samples are classified into groups, the tool performs pairwise comparisons for all groups. This is performed independently for each of the graph metrics.  
+
+#### Discarded Samples  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "discarded_samples.png")
+```
+  
+It provides the names of samples that have been discarded from the analysis [e.g. samples with no connections among nt vars].
+
