@@ -212,7 +212,7 @@ ui <- fluidPage(
       br(),
       br(),
       
-      textInput("groups_name", "Enter the chosen name for the second column:", value = "group_name", placeholder = "Enter column name"),
+      textInput("groups_name", "Enter the name chosen for the second column:", value = "group_name", placeholder = "Enter column name"),
       
       br(),
       
@@ -220,24 +220,20 @@ ui <- fluidPage(
     ),
     
     tabPanel("Set Parameters",
-      tags$b("Choose starting column 5 for Leader analysis, 59 for FR1 analysis or other"),
       
-      br(),
-      br(),
-      
-      numericInput("col_start", "Enter starting column:", value = 5, step = 1),
+      numericInput("col_start", "Enter starting column [suggested: 5 (beginning of FR1 region), 23-59 (when using FR1 primers)]:", value = 5, step = 1),
       
       br(),
       
-      numericInput("col_end", "Enter ending column:", value = 313, step = 1),
+      numericInput("col_end", "Enter ending column [suggested: 313 (end of FR3 region)]:", value = 313, step = 1),
       
       br(),
       
-      numericInput("min_reads", "Enter threshold minimum reads for the nodes:", value = 10, step = 1),
+      numericInput("min_reads", "Enter threshold minimum reads for the nodes [suggested: 10]:", value = 10, step = 1),
       
       br(),
       
-      numericInput("p_thres", "Enter p-value threshold:", value = 0.05),
+      numericInput("p_thres", "Enter p-value threshold [suggested: 0.01 or 0.05]:", value = 0.05),
       
       br(),
       
@@ -254,7 +250,7 @@ ui <- fluidPage(
         shiny::checkboxGroupInput("include", "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Metrics comparisons")),
         colour = "red",
         type = "inline",
-        content = "Enter here explanatory text for the first checkbox group. You cannot have line breaks."
+        content = "Choose which samples to include in the analysis. Summary tables produces tables throughout the process. The jumps between non-adjacent nodes allows that nt vars with common SHMs differing by two or more SHMs to be included in the analysis. If the option of amino acids mutations is selected, replacement mutations will be shown in the analysis and summary tables about the replacement mutations will be produced. Other option includes the possibility of having the size of the nodes of the graph networks proportional to the number of reads of the respective nucleotide variant. Other options consist on including graph metrics, graph networks and metric comparison in the analysis. For more information, please consult the IgIDivA UserGuide."
       ),
       
       br(),
@@ -446,7 +442,7 @@ server <- function(input, output, session) {
         shiny::checkboxGroupInput("include_metrics", "Which graph metrics to show?", choices = c("Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance"), selected = c("Sample ID", "Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance")),
         colour = "red",
         type = "inline",
-        content = "Enter here explanatory text for the second checkbox group. You cannot have line breaks."
+        content = "The main variant identity shows the percentage of identity of the main nt var with its respective germline. The relative convergence reads calculates the ratio of the number of sequences of the most relevant pathways to the number of sequences of the main nt var. The most relevant pathway score is the ratio o the total number of sequences of the nodes forming one block of pathways to the total number of sequences of all the nodes of the network with more SHMs than the main nt var. The most relevant pathway score nodes shows the number of nodes of the most relevant pathway. The end nodes density is the ratio of the number of end nodes to the number of nt vars with additional SHMs. The max path length is the number of levels of additional SHMs. The max mutations path length shows the maximum level of additional SHMs, allowing non-consecutive SHMs. The total reads shows the total number of reads of the sample. The average degree is the average total number of connections of each nt var. The average distance isthe average number of steps along the shortest pathways between each pair of nt vars."
       )
     }
   })
@@ -457,7 +453,7 @@ server <- function(input, output, session) {
         shiny::checkboxGroupInput("compare_metrics", "Which metrics to compare?", choices = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance"), selected = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance")),
         colour = "red",
         type = "inline",
-        content = "Enter here explanatory text for the third checkbox group. You cannot have line breaks."
+        content = "Select, among the graph metrics, which one(s) to use to perform comparisons between groups of samples."
       )
     }
   })
