@@ -10,7 +10,7 @@ The UserGuide of IgIDivA can be found [here](https://rpubs.com/laura_zara/909227
 
 ## Installation
 The `IgIDivA` scripts can be freely downloaded [here](https://github.com/laurazara/IgIDivA).
-It requires `R` (version "4.1"), which can be installed on any operating system from [CRAN](https://cran.r-project.org/).
+It requires `R` (version "4.1"), which can be installed on any operating system from [CRAN](https://cran.r-project.org/). `IgIDivA` has been tested in Windows 10, macOS 10.15 and Linux WSL.
 All the packages that need to be installed in your `R` session are the following:
 
 ```r
