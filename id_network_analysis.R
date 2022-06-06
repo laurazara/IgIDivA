@@ -4,7 +4,6 @@
 library(data.table)
 library(stringr)
 library(dplyr)
-library(readxl)
 library(ggsci)
 library(tidygraph)
 library(ggraph)
