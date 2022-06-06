@@ -21,11 +21,7 @@ H36	CLL subset #169
 H38	CLL subset #169
 H39	CLL subset #169
 HERVO	CLL subset #2
-KRZKAR	CLL subset #2
 LIEBER	CLL subset #2
 MAL	CLL subset #2
-MALCOL	CLL subset #2
-MENCHR	CLL subset #2
 MENCHRcDNA	CLL subset #2
 MORDO	CLL subset #2
-ROUJEA	CLL subset #2
