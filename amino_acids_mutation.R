@@ -13,16 +13,10 @@ for (i in 1:n_muts){
   mut = strsplit(nt_muts[i],"")[[1]]
   l = length(mut)
   
-  print(mut)
   pos = as.integer(paste(mut[2:(l-1)],collapse=""))
-  print(pos)
   aa_pos = floor((pos-1)/3+1)
-  
-  # aa_pos = floor(pos / 3) + (pos %% 3)  
   codon_ind = 3*(aa_pos-1)+1 
-  print(i)
   codon_o = germline[codon_ind:(codon_ind+2)]
-  #codon_o = unlist(codon_o)
   codon_o = paste(codon_o,collapse="")
   aa_o = codonToAAone(codon_o)
   
