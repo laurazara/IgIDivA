@@ -109,7 +109,7 @@ iterate_do_graph = function(argument_file,save_path = getwd(),include_jump=TRUE,
   
   
   discarded_samples <- data.table::fread(paste0(output_path,'/metric_table_all.txt'), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-  discarded_samples <- na.omit(discarded_samples, invert=TRUE)
+  discarded_samples <- na.omit(discarded_samples, cols=setdiff(colnames(discarded_samples),"error_type"),invert=TRUE)
   discarded_samples <- as.data.frame(discarded_samples$sample_id)
   colnames(discarded_samples) <- "sample_id"
   write.table(discarded_samples, paste0(output_path,"/discarded_samples_table.txt"), sep = "\t", dec = ".", 
