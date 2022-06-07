@@ -45,7 +45,7 @@ Functions for an `R` command-line use are also available.
 The `IgIDivA` scripts can be freely downloaded [here](https://github.com/laurazara/IgIDivA).
 It requires `R` (version "4.1"), which can be installed on any operating system [e.g., Linux, Windows, MacOS] from [CRAN](https://cran.r-project.org/). Installation with Docker will be available in the coming future.
 
-All the packages that need to be installed in your `R` session are the following:
+All the packages that need to be installed in the `R` session are the following:
 
 ```r
 install.packages("shiny")
@@ -70,11 +70,28 @@ install.packages("rstatix")
 
 ```
 
-All the scripts from `IgIDivA` need to be downloaded in the same folder. All the input files should also be stored in a folder.
+All the scripts from `IgIDivA` need to be downloaded in the same folder. All the input files should also be stored in a different folder.  
+
+### Download an example dataset as Input for `IgIDivA`  
+An example dataset to be used as Input for IgIDivA can be found [here](https://doi.org/10.5281/zenodo.6616046). The dataset comprises the tripr output files ["highly_sim_all_clonotypes" and "Grouped Alignment_nt] of 26 chronic lymphocytic leukemia (CLL) samples [19 CLL subset #2 samples and 7 CLL subset #169 samples]. The data was retrieved from [ENA](https://www.ebi.ac.uk/ena/browser/view/PRJEB36589?show=reads) under the accession number PRJEB36589, and subsequently processed with [IMGT/HighV-QUEST](https://www.imgt.org/HighV-QUEST/home.action) and [tripr](https://bioconductor.org/packages/release/bioc/html/tripr.html).  
+Each sample's data can be downloaded by pressing the button `Download`.  
+Alternatively, to download all the data at the same time, the following commands can be used in the `R` session:  
+```r
+install.packages("zen4R")
+library(zen4R)
+path = paste0(getwd(), "/Input")
+if (!dir.exists(path)){
+  dir.create(path)}
+zen4R::download_zenodo('10.5281/zenodo.6616046',  path = path)
+```  
+(The variable "path" can be changed with the location where the user wants to store the Input).  
+
+
+
 
 # Running `IgIDivA` as a `shiny` application
 
-In order to start the `shiny` app, please open the script `app.R` in your `R` session and press the button `Run App`.  
+In order to start the `shiny` app, the script `app.R` should be opened in the `R` session and the button `Run App` should be pressed.  
 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "run_app.png")
@@ -116,7 +133,9 @@ groups = data.table::fread("SampleGroups.txt", header = TRUE,
 head(groups)
 ```
   
-Once created, the file can be uploaded through the **Browse** button. When it is uploaded, a message "Upload completed" will appear.  
+An example file can be found [here](https://github.com/laurazara/IgIDivA/tree/main/UserGuide) as "SampleGroups.txt" (the samples correspond to the [data](https://doi.org/10.5281/zenodo.6616046) mentioned before).  
+
+Once created, the file can be uploaded through the **Browse** button. When it is uploaded, a message "Upload completed" will appear. Then, the tab "Set Parameters" should be opened.  
 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "upload_groups.png")
@@ -127,17 +146,15 @@ knitr::include_graphics(path = "upload_groups.png")
 There are different parameters that can be applied:  
 
 - __Enter starting column__: <br/>
-    From the Grouped Alignment file, choose which column corresponds to the beginning of the sequence. If the experimental procedure amplifies the whole
-    immunoglobulin with, for example, leader primers, the starting column should be 5 [the initial 4 columns of the file contain additional information].
-    If the experimental procedure uses primers that bind in a more downstream position, the starting column should be changed [for example, for primers binding to the FR1 region of the immunoglobulin, the starting column position could be 59]. The default is position 5.  
+    From the Grouped Alignment file, the user can choose which column corresponds to the beginning of the sequence. If the experimental procedure amplifies the whole immunoglobulin with, for example, leader primers, the starting column should be 5 [the initial 4 columns of the file contain additional information]. If the experimental procedure uses primers that bind in a more downstream position, the starting column should be changed [for example, for primers binding to the FR1 region of the immunoglobulin, the starting column position could be 23 or 59, for example, depending on the binding region]. The default is position 5.  
 - __Enter ending column__: <br/>
-    From the Grouped Alignment file, choose which column corresponds to the end of the sequence [the end of the FR3 region]. The default is position 313.  
+    From the Grouped Alignment file, the user can choose which column corresponds to the end of the sequence [the end of the FR3 region]. The default is position 313.  
 - __Enter threshold minimum reads for the nodes__: <br/>
-    Choose the minimum number of reads that need to be part of a nucleotide variant (node) for it to be considered in the analysis. The default is 10.  
+    The user can choose the minimum number of reads that need to be part of a nucleotide variant (node) for it to be considered in the analysis. The default is 10.  
 - __Enter p-value threshold__: <br/>
-    For the metrics comparison between groups of samples, choose the p-value threshold for a comparison to be considered as statistically significant.The default is 0.05.  
+    For the metrics comparison between groups of samples, the user can choose the p-value threshold for a comparison to be considered as statistically significant.The default is 0.05.  
 - __Do you want the p-values to be adjusted?__: <br/>
-    Choose between p-value or adjusted p-value. The default is not-adjusted.  
+    The user can choose between p-value or adjusted p-value. The default is not-adjusted.  
     
     
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
@@ -145,7 +162,7 @@ knitr::include_graphics(path = "set_parameters.png")
 ```  
   
 - __Clonotypes to be taken into account for the analysis__: <br/>
-    Choose the clonotypes to be included in the analysis. One approach would be, for example, to include the first [the most frequent] clonotype.
+    Option for the user to choose the clonotypes to be included in the analysis. One approach would be, for example, to include the first [the most frequent] clonotype.
     If more than one clonotype is selected, their indexes have to be separated by comma. The default is 1.  
     
     
@@ -196,7 +213,7 @@ knitr::include_graphics(path = "metrics.png")
 - __Most relevant pathway score (nodes)__: <br/>
     Number of nodes of the most relevant pathway.
 - __End nodes density__: <br/>
-    Graph metric.Ratio of the number of end nodes to the number of nucleotide variants with additional SHMs. It shows the randomness or specificity of the mutational path.
+    Graph metric. Ratio of the number of end nodes to the number of nucleotide variants with additional SHMs. It shows the randomness or specificity of the mutational path.
 - __Max path length__: <br/>
     Graph metric. Number of levels of additional SHMs. It shows the complexity of the mutational pathways.
 - __Max mutations path length__: <br/>
@@ -227,13 +244,13 @@ The button **Reset** can be used to start a new analysis, resetting the paramete
 
 ## Visualize Results  
 
-When the analysis is finished, the **Visualize Results** tab will become active.
+When the analysis is finished, the **Visualize Results** tab will become active. It might take some time since the analysis is completed until the visualizations are visible.
 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "visualiza_results.png")
 ```
   
-It shows all the different output results and it offers the possibility of selecting them and choosing which sample to visualize.
+It shows all the different output results and it offers the possibility of selecting them and choosing which sample to visualize. In each tab, a *Download* button allows for each output to be downloaded independently. Moreover, all the output is saved locally in the user's working directory.
 
 #### Summary Calculations  
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
