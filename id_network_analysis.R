@@ -189,7 +189,6 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   for(i in numbers2){
     filterextramuts = filter(extramutslinked, count_Nt == i)
     extramut[k] = filterextramuts %>% distinct(filterextramuts$Mutations) %>% nrow()  #-1 to not count the reference
-    print(paste0(i, " extra muts = ", extramut[k]))
     extraseqs[k] = sum(filterextramuts$N, na.rm=TRUE) 
     print(paste0(i, " extra muts seqs = ", extraseqs[k]))
     k=k+1
