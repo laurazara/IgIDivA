@@ -79,6 +79,7 @@ Alternatively, to download all the data at the same time, the following commands
 ```r
 install.packages("zen4R")
 library(zen4R)
+options(timeout = max(600, getOption("timeout")))
 path = paste0(getwd(), "/Input")
 if (!dir.exists(path)){
   dir.create(path)}
