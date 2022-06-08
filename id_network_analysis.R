@@ -13,14 +13,12 @@ source('amino_acids_mutation.R')
 
 # read input files ----------------------------------------------------------------
 
-doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save_path=getwd(),include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
-  #for FR1 samples
-  #col_start=59
+doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save_path,include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
   cys_pre_cdr3_length = 3
   col_pos1 = 5 #start position to begin directly from
   #the sequence alignment
   
-  save_path = paste0(save_path,'/',sample_id)
+  save_path = (getwd(), '/', save_path,'/',sample_id)
   dir.create(save_path,showWarnings = FALSE)
   
   high_sim = data.table::fread(highly_sim_clonos_file,
@@ -33,7 +31,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                                 sep = "\t", 
                                 stringsAsFactors = FALSE)
   #colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
-   colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
+  colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
   # find the germline ---------------------------------------------------------------
   gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
   gene_max_N = gene_count$V.GENE.and.allele[which(gene_count$N==max(gene_count$N))]
