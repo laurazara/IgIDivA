@@ -7,6 +7,7 @@ library(rstatix)
 
 perform_statistical_analysis <- function(
     groups_file, 
+    save_folder,
     final_metric_table, 
     comparison_metrics = c(
         "convergence_score", 
@@ -21,7 +22,7 @@ perform_statistical_analysis <- function(
     adjust = "no"
 ) {
   
-  dir.create(paste0(getwd(), "/Comparisons"), showWarnings = FALSE)
+  dir.create(paste0(getwd(), '/', save_folder, "/Comparisons"), showWarnings = FALSE)
     
     if (adjust=='no'){
         adj_text = ''
@@ -212,7 +213,7 @@ perform_statistical_analysis <- function(
           theme(text = element_text(size = 18))
 
         ggsave(
-          filename = paste0(getwd(), "/Comparisons/", j, "_vs_", i, ".pdf"),
+          filename = paste0(getwd(), '/',save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
           plot = gr, width = 9.0, height = 9.0, units = "in"
         )
 
@@ -293,7 +294,7 @@ perform_statistical_analysis <- function(
           theme(text = element_text(size = 18))
 
         ggsave(
-          filename = paste0(getwd(), "/Comparisons/", j, "_vs_", i, ".pdf"),
+          filename = paste0(getwd(), '/', save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
           plot = gr, width = 10.5, height = 7.0, units = "in"
         )
 
@@ -302,7 +303,7 @@ perform_statistical_analysis <- function(
       }
     }
   }
-  
-  
+     
+  message("statistical_analysis script ended")
   return(plots_list)
 }
