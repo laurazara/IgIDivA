@@ -12,7 +12,6 @@ mut_table = data.table(nt_muts=nt_muts,from=character(n_muts),to=character(n_mut
 for (i in 1:n_muts){
   mut = strsplit(nt_muts[i],"")[[1]]
   l = length(mut)
-  
   pos = as.integer(paste(mut[2:(l-1)],collapse=""))
   aa_pos = floor((pos-1)/3+1)
   codon_ind = 3*(aa_pos-1)+1 
