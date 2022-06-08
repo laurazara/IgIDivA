@@ -79,17 +79,16 @@ Alternatively, to download all the data at the same time, the following commands
 ```r
 install.packages("zen4R")
 library(zen4R)
-options(timeout = max(600, getOption("timeout")))
 path = paste0(getwd(), "/Input")
 if (!dir.exists(path)){
   dir.create(path)}
 zen4R::download_zenodo('10.5281/zenodo.6616046',  path = path)
 ```  
 (The variable "path" can be changed with the location where the user wants to store the Input).  
-
-
-
-
+Note: warnings might appear in RStudio indicating that the downloaded length of some files != reported length. This means that not all the length of those files was downloaded [probably due to the Internet speed]. One solution is to increase the 'downloading' time in Rstudio, with this command:
+```r
+options(timeout = max(600, getOption("timeout")))
+```  
 # Running `IgIDivA` as a `shiny` application
 
 In order to start the `shiny` app, the script `app.R` should be opened in the `R` session and the button `Run App` should be pressed.  
