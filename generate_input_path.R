@@ -32,3 +32,13 @@ generate_input_file = function(input_path){
     stop('problem with the ids of the files')
   }
 }
+
+
+
+generate_output_path = function(save_path){
+    
+    if(!file.exists(paste0(getwd(), '/', save_path))){
+        dir.create(paste0(getwd(), '/', save_path), showWarnings = FALSE)
+    }
+    
+}
