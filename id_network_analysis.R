@@ -18,7 +18,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   col_pos1 = 5 #start position to begin directly from
   #the sequence alignment
   
-  save_path = (getwd(), '/', save_path,'/',sample_id)
+  save_path = paste0(getwd(), '/', save_path,'/',sample_id)
   dir.create(save_path,showWarnings = FALSE)
   
   high_sim = data.table::fread(highly_sim_clonos_file,
