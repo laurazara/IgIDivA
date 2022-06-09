@@ -33,6 +33,7 @@ install.packages("igraph")
 install.packages("ggplot2")
 install.packages("ggpubr")
 install.packages("rstatix")
+install.packages("shinyvalidate")
 
 ```
 
