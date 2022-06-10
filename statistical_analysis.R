@@ -21,8 +21,12 @@ perform_statistical_analysis <- function(
     p_threshold = 0.05,
     adjust = "no"
 ) {
-  
-  dir.create(paste0(getwd(), '/', save_folder, "/Comparisons"), showWarnings = FALSE)
+    if(file.exists(groups_file)){
+        sample_metadata = fread(
+            groups_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE
+        )
+    
+  dir.create(paste0(save_folder, "/Comparisons"), showWarnings = FALSE)
     
     if (adjust=='no'){
         adj_text = ''
@@ -34,14 +38,7 @@ perform_statistical_analysis <- function(
   
   # read inputs -------------------------------------
     
-    if(file.exists(groups_file)){
-        sample_metadata = fread(
-            groups_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE
-        )
-    }
-  
 
-  
   data_metrics = fread(
     final_metric_table, header = TRUE, sep = "\t", stringsAsFactors = FALSE
   )
@@ -213,7 +210,7 @@ perform_statistical_analysis <- function(
           theme(text = element_text(size = 18))
 
         ggsave(
-          filename = paste0(getwd(), '/',save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
+          filename = paste0(save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
           plot = gr, width = 9.0, height = 9.0, units = "in"
         )
 
@@ -294,7 +291,7 @@ perform_statistical_analysis <- function(
           theme(text = element_text(size = 18))
 
         ggsave(
-          filename = paste0(getwd(), '/', save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
+          filename = paste0(save_folder, "/Comparisons/", j, "_vs_", i, ".pdf"),
           plot = gr, width = 10.5, height = 7.0, units = "in"
         )
 
@@ -302,8 +299,11 @@ perform_statistical_analysis <- function(
 
       }
     }
+      message("statistical_analysis script ended")
+      return(plots_list)
   }
-     
-  message("statistical_analysis script ended")
-  return(plots_list)
+  }else{
+      return()
+  }
+
 }
