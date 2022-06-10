@@ -13,12 +13,14 @@ source('amino_acids_mutation.R')
 
 # read input files ----------------------------------------------------------------
 
-doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save_path,include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
+doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, save_path,include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
+  #for FR1 samples
+  #col_start=59
   cys_pre_cdr3_length = 3
   col_pos1 = 5 #start position to begin directly from
   #the sequence alignment
   
-  save_path = paste0(getwd(), '/', save_path,'/',sample_id)
+  save_path = paste0(save_path,'/',sample_id)
   dir.create(save_path,showWarnings = FALSE)
   
   high_sim = data.table::fread(highly_sim_clonos_file,
@@ -31,6 +33,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
                                 sep = "\t", 
                                 stringsAsFactors = FALSE)
   #colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
+  #for FR1
   colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
   # find the germline ---------------------------------------------------------------
   gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
@@ -70,6 +73,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   main = main[, col_start:col_end]
   main = as.data.table(t(main))
   #main$pos = as.character(1:nrow(main))
+  #For FR1
   main$pos = as.character(colnames(alignment)[col_start:col_end])
   main_gaps = main[which(main$V1 == "."), ] 
   main = main[which( !(main$V1 %in% c("-", ".")) ), ]
@@ -253,6 +257,8 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   adjacency = adjacency[which( adjacency$suppl_mu_f < adjacency$suppl_mu_t ), ]
   #who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0)
   #adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t
+  who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0) #[v]
+  adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t #[V]
   if (include_jump){
     adjacency = adjacency[which(adjacency$suppl_mu_f==0 | adjacency$diff_n == (adjacency$length_t - adjacency$length_f) | (adjacency$suppl_mu_f<0 & adjacency$suppl_mu_t <= 0)), ]
     ind2keep = logical(nrow(adjacency))
@@ -269,6 +275,24 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id,save
   else{
     adjacency = adjacency[which(adjacency$diff_n <= 1), ]
     adjacency = adjacency[which(abs(adjacency$suppl_mu_f - adjacency$suppl_mu_t) <= 1), ]
+    
+    #remove positive pathways not connected to main nt var #[v]
+    ind2keep = adjacency$suppl_mu_f<=1 #[v]
+    ind2keep_curr = adjacency$suppl_mu_f==1 #[v]
+    for (i in 1:(max(adjacency$suppl_mu_f)-1)){ #[v]
+      ind2keep_curr =  adjacency$from %in% adjacency$to[ind2keep_curr] #[v]
+      ind2keep = ind2keep | ind2keep_curr #[v]
+    } #[v]
+    adjacency = adjacency[ind2keep,] #[v]
+    
+    #remove negative pathways not connected to main nt var #[v]
+    ind2keep = adjacency$suppl_mu_t>=-1 #[v]
+    ind2keep_curr = adjacency$suppl_mu_t==-1 #[v]
+    for (i in 1:abs(min(adjacency$suppl_mu_t)+1)){ #[v]
+      ind2keep_curr =  adjacency$to %in% adjacency$from[ind2keep_curr] #[v]
+      ind2keep = ind2keep | ind2keep_curr #[v]
+    } #[v]
+    adjacency = adjacency[ind2keep,] #[v]
   }
   # create connection matrix --------------------
   #edges = adjacency[which((adjacency$diff_n != 0) | (adjacency$from == adjacency$to)), ]
@@ -565,5 +589,4 @@ get_less_mutations = function(joined_filtered,germline2,main,min_reads=10,col_st
   less_expanded = less_expanded[order(suppl_mut,-N,Mutations),]
   return(less_expanded)
 }
-
 
