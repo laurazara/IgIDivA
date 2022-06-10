@@ -21,7 +21,7 @@ generate_input_file = function(input_path){
                              sample_id=id_hsim,
                              stringsAsFactors=FALSE)
     write.table(input_table,"input_files.txt", sep = "\t", dec = ".",row.names = FALSE, col.names = TRUE,quote = FALSE)
-    base::message(paste0('File path: ', getwd(), '/', "input_files.txt"))
+    # base::message(paste0('File path: ', getwd(), '/', "input_files.txt"))
     return(input_table)
   }
   else{
@@ -37,8 +37,8 @@ generate_input_file = function(input_path){
 
 generate_output_path = function(save_path){
     
-    if(!file.exists(paste0(getwd(), '/', save_path))){
-        dir.create(paste0(getwd(), '/', save_path), showWarnings = FALSE)
+    if(!file.exists(save_path)){
+        dir.create(save_path, recursive = TRUE,showWarnings = TRUE)
     }
     
 }
