@@ -1,12 +1,12 @@
 # Define functions
 create_summary_calculations_table <- function(sample, save_path) {
-    summary_calculations <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/summary-calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    summary_calculations <- data.table::fread(paste0(save_path, "/", sample, "/summary-calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
     return(summary_calculations)
 }
 
 create_extra_mutations_calculations_table <- function(sample, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/extra_mutations_calculations_", sample, ".txt"))){
-        extra_mutations_calculations <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/extra_mutations_calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/extra_mutations_calculations_", sample, ".txt"))){
+        extra_mutations_calculations <- data.table::fread(paste0(save_path, "/", sample, "/extra_mutations_calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         return(extra_mutations_calculations)
     }else{
         return()
@@ -14,8 +14,8 @@ create_extra_mutations_calculations_table <- function(sample, save_path) {
 }
 
 create_less_mutations_calculations_table <- function(sample, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/less_muts_calculations_", sample, ".txt"))){
-        less_mutations_calculations <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/less_muts_calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/less_muts_calculations_", sample, ".txt"))){
+        less_mutations_calculations <- data.table::fread(paste0(save_path, "/", sample, "/less_muts_calculations_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         return(less_mutations_calculations)
     }else{
         return()
@@ -23,8 +23,8 @@ create_less_mutations_calculations_table <- function(sample, save_path) {
 }
 
 create_mutations_table <- function(sample, min_reads, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/evolution-file-", sample, "_threshold", min_reads, ".txt"))){
-        mutations <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/evolution-file-", sample, "_threshold", min_reads, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/evolution-file-", sample, "_threshold", min_reads, ".txt"))){
+        mutations <- data.table::fread(paste0(save_path, "/", sample, "/evolution-file-", sample, "_threshold", min_reads, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         return(mutations)
     }else{
         return()
@@ -32,8 +32,8 @@ create_mutations_table <- function(sample, min_reads, save_path) {
 }
 
 create_aa_mutations_main_var_table <- function(sample, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/aa_muts_weight_main_variant_", sample, ".txt"))){
-        aa_mutations_main_var <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/aa_muts_weight_main_variant_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/aa_muts_weight_main_variant_", sample, ".txt"))){
+        aa_mutations_main_var <- data.table::fread(paste0(save_path, "/", sample, "/aa_muts_weight_main_variant_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         return(aa_mutations_main_var)
     }else{
         return()
@@ -41,8 +41,8 @@ create_aa_mutations_main_var_table <- function(sample, save_path) {
 }
 
 create_aa_mutations_table <- function(sample, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/aa_muts_weight_", sample, ".txt"))){
-        aa_mutations <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/aa_muts_weight_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/aa_muts_weight_", sample, ".txt"))){
+        aa_mutations <- data.table::fread(paste0(save_path, "/", sample, "/aa_muts_weight_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         return(aa_mutations)
     }else{
         return()
@@ -51,8 +51,8 @@ create_aa_mutations_table <- function(sample, save_path) {
 
 create_graph_metrics_table <- function(sample, include_metrics, save_path) {
     
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/graph_info_", sample, ".txt"))){
-        graph_metrics <- data.table::fread(paste0(getwd(), '/', save_path, "/", sample, "/graph_info_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    if(file.exists(paste0(save_path, "/", sample, "/graph_info_", sample, ".txt"))){
+        graph_metrics <- data.table::fread(paste0(save_path, "/", sample, "/graph_info_", sample, ".txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
         metrics <- unlist(strsplit(include_metrics, ","))
         
         if (!("Main variant identity" %in% metrics)) {
@@ -94,9 +94,9 @@ create_graph_metrics_table <- function(sample, include_metrics, save_path) {
 }
 
 create_graph_network <- function(sample, save_path) {
-    if(file.exists(paste0(getwd(), '/', save_path, "/", sample, "/", sample, "_ID.pdf"))){
-        pdf_convert(paste0(getwd(), '/', save_path, "/", sample, "/", sample, "_ID.pdf"), format = "png", filenames = paste0(getwd(), '/', save_path, "/", sample, "/", sample, "_ID.png"), dpi = 300)
-        list(src = paste0(getwd(), '/', save_path, "/", sample, "/", sample, "_ID.png"), width = 800, height = 800)
+    if(file.exists(paste0(save_path, "/", sample, "/", sample, "_ID.pdf"))){
+        pdf_convert(paste0(save_path, "/", sample, "/", sample, "_ID.pdf"), format = "png", filenames = paste0(save_path, "/", sample, "/", sample, "_ID.png"), dpi = 300)
+        list(src = paste0(save_path, "/", sample, "/", sample, "_ID.png"), width = 800, height = 800)
     }else{
         return()
     }
