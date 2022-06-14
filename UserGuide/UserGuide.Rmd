@@ -3,8 +3,8 @@ title: "IgIDivA"
 author: "Laura Zaragoza-Infante"
 date: "20/5/2022"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 
@@ -36,14 +36,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introduction
-`IgIDivA` (Immunoglobulin Intraclonal Diversification Analysis) is a purpose-built tool for the analysis of the intraclonal diversification process using high-throughput sequencing data.  
+`IgIDivA` [Immunoglobulin Intraclonal Diversification Analysis] is a purpose-built tool for the analysis of the intraclonal diversification process using high-throughput sequencing data.  
 It is written in [shiny](https://shiny.rstudio.com/). Every step of the analysis can be performed interactively, thus not requiring any programming skills.  
 It takes as input the output files "clonotypes_computation" and "grouped_alignment_nt" from the [`tripr`](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler) package.  
 Functions for an `R` command-line use are also available.
 
 ## Installation
 The `IgIDivA` scripts can be freely downloaded [here](https://github.com/laurazara/IgIDivA).
-It requires `R` (version "4.1"), which can be installed on any operating system [e.g., Linux, Windows, MacOS] from [CRAN](https://cran.r-project.org/). Installation with Docker will be available in the coming future.
+It requires `R` [version "4.1"], which can be installed on any operating system [e.g., Linux, Windows, MacOS] from [CRAN](https://cran.r-project.org/). Installation with Docker will be available in the coming future.
 
 All the packages that need to be installed in the `R` session are the following:
 
@@ -85,7 +85,7 @@ if (!dir.exists(path)){
   dir.create(path)}
 zen4R::download_zenodo('10.5281/zenodo.6616046',  path = path)
 ```  
-(The variable "path" can be changed with the location where the user wants to store the Input).  
+[The variable "path" can be changed with the location where the user wants to store the Input].  
 Note: warnings might appear in RStudio indicating that the downloaded length of some files != reported length. This means that not all the length of those files was downloaded [probably due to the Internet speed]. One solution is to increase the 'downloading' time in Rstudio, with this command:
 ```r
 options(timeout = max(600, getOption("timeout")))
@@ -116,7 +116,7 @@ First, the user should specify the Results folder. For that, the user can go to 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "copy_address_as_text.png")
 ```  
-Then, the copied path should be pasted in the area **Enter desired path here**, together with a "/" and the name of the Results folder that the user wants to create [e.g. "Results"] (if a folder with this name does not exist, it will be created):  
+Then, the copied path should be pasted in the area **Enter desired path here**, together with a "/" and the name of the Results folder that the user wants to create [e.g. "Results"]. If a folder with this name does not exist, it will be created:  
 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "output_folder_creation.png")
@@ -148,16 +148,14 @@ Users should subsequently verify the selection by pressing the button **Verify**
 In order to make comparisons between groups of samples, the user needs to create a `tab-delimited` file with two columns.  
 The first column should be named "sample_id" and should include the names of the samples.  
 The second column should include the name of the group that each sample belongs to. By default the name of the column is "group_name", but it can be modified
-in the **Enter the name chosen for the second column** button.  
+in the **Enter the name chosen for the second column** button. The file would look like this:  
 
-```{r}
-groups = data.table::fread("SampleGroups.txt", header = TRUE,
-                               sep = "\t",
-                               stringsAsFactors = FALSE)
-head(groups)
+```{r, echo=FALSE, out.width='20%', fig.align='center'}
+knitr::include_graphics(path = "SampleGroups.png")
 ```
+
   
-An example file can be found [here](https://github.com/laurazara/IgIDivA/tree/main/UserGuide) as "SampleGroups.txt" (the samples correspond to the [data](https://doi.org/10.5281/zenodo.6616046) mentioned before).  
+An example file can be found [here](https://github.com/laurazara/IgIDivA/tree/main/UserGuide) as "SampleGroups.txt"; the samples correspond to the [data](https://doi.org/10.5281/zenodo.6616046) mentioned before.  
 
 Once created, the file can be uploaded through the **Browse** button. When it is uploaded, a message "Upload completed" will appear. Then, the tab "Set Parameters" should be opened.  
 
@@ -262,7 +260,7 @@ Once all the parameters have been selected, the button **Start** must be pressed
 knitr::include_graphics(path = "start_button.png")
 ``` 
   
-The button **Reset** can be used to start a new analysis, resetting the parameters [the output results will be reset when pressing the **Start** button.
+The button **Reset** can be used to start a new analysis, resetting the parameters [the output results will be reset when pressing the **Start** button].
   
   
 When the analysis is finished, a notification will appear with the message 'File conversion in progress...'. This conversion is performed to allow the visualizations to be visible in the **Visualize results** tab. Once it is ready, the user will be automatically redirected to the **Visualize Results** tab.
@@ -280,28 +278,35 @@ This tab shows all the different output results and it offers the possibility of
 knitr::include_graphics(path = "summary_calculations_H33.png")
 ```
   
-For each sample, it shows the number of related clonotypes [clonotypes with the same IGV gene and very similar CDR3] considered for the analysis, the number of nucleotide variants included, the total number of sequences, the number of singletons [nucleotide variants constituted by only one sequence], number of expanded nucleotide variants [nucleotide variants constituted by more than 1 sequence], number of sequences belonging to expanded nucleotide variants, and the number of reads of the main nucleotide variant.
+For each sample, it shows the number of related clonotypes [clonotypes with the same IGV gene and very similar CDR3] considered for the analysis, the number of nucleotide variants included, the total number of sequences, the number of singletons [nucleotide variants constituted by only one sequence], number of expanded nucleotide variants [nucleotide variants constituted by more than 1 sequence], number of sequences belonging to expanded nucleotide variants, and the number of reads of the main nucleotide variant. [Example shown: sample H33].  
+
+
 
 #### Extra Mutations Calculations  
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "extra_mutations_H33.png")
 ```
   
-For each sample, it shows the number of nt vars with additional SHMs for each given number of SHMs, as well as the total number of sequences. It includes the total number of nt vars and sequences.  
+For each sample, it shows the number of nt vars with additional SHMs for each given number of SHMs, as well as the total number of sequences. It includes the total number of nt vars and sequences. [Example shown: sample H33].  
+
 
 #### Less Mutations Calculations  
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "less_mutations_H33.png")
 ```
   
-For each sample, it shows the number of sequences lacking SHMs of the main nt var, for each different number of SHMs.  
+For each sample, it shows the number of sequences lacking SHMs of the main nt var, for each different number of SHMs. [Example shown: sample H33].  
+
+
 
 #### Mutations
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "evolution_AMRMES.png")
 ```
   
-For each sample, it provides information for all unique SHMs or combinations of SHMs of all the nt vars that are part of the connected graph network. It also shows the number of SHMs in comparison to the germline, the number of sequences with those SHMs and the mutational level to which they belong. The mutational level is “less” if they have fewer SHMs than the main nt var, “main” for the SHMs of the main nt var, and “additional” for the cases with more SHMs than the main nt var.  
+For each sample, it provides information for all unique SHMs or combinations of SHMs of all the nt vars that are part of the connected graph network. It also shows the number of SHMs in comparison to the germline, the number of sequences with those SHMs and the mutational level to which they belong. The mutational level is “less” if they have fewer SHMs than the main nt var, “main” for the SHMs of the main nt var, and “additional” for the cases with more SHMs than the main nt var. [Example shown: sample AMRMES].  
+
+
 
 #### Amino-acid Mutations Main Variant  
 
@@ -309,7 +314,9 @@ For each sample, it provides information for all unique SHMs or combinations of 
 knitr::include_graphics(path = "aa_muts_main_nt_var_H33.png")
 ```
   
-It provides information of the replacement SHMs in the main nt var of each sample, together with the number of sequences carring each mutation.  
+It provides information of the replacement SHMs in the main nt var of each sample, together with the number of sequences carring each mutation. [Example shown: sample H33].  
+
+
 
 #### Global Amino-acid Mutations Main Variant  
 
@@ -317,7 +324,8 @@ It provides information of the replacement SHMs in the main nt var of each sampl
 knitr::include_graphics(path = "global_aa_muts_main_nt_var.png")
 ```
   
-It contains all identified replacement SHMs in the main nt var of all the samples. It can be used to identify mutational patterns among samples.  
+It contains all identified replacement SHMs in the main nt var of all the samples. It can be used to identify mutational patterns among samples. [Example shown: all samples from example dataset].  
+
  
 
 #### Amino-acid Mutations  
@@ -326,7 +334,8 @@ It contains all identified replacement SHMs in the main nt var of all the sample
 knitr::include_graphics(path = "aa_muts_extra_H33.png")
 ```
   
-It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var].  
+It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var]. [Example shown: sample H33].  
+
 
 #### Global Amino-acid Mutations  
 
@@ -334,7 +343,8 @@ It contains all identified replacement SHMs in the nt vars with additional SHMs 
 knitr::include_graphics(path = "global_aa_muts_extra.png")
 ```
   
-It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var] for all the samples. It can be used to identify mutational patterns among samples.  
+It contains all identified replacement SHMs in the nt vars with additional SHMs [excluding the ones of the main nt var] for all the samples. It can be used to identify mutational patterns among samples. [Example shown: all samples from example dataset].  
+
 
 #### Graph Metrics  
 
@@ -342,7 +352,8 @@ It contains all identified replacement SHMs in the nt vars with additional SHMs 
 knitr::include_graphics(path = "graph_metrics_H33.png")
 ```
   
-For each sample, it contains the germline identity %, the values of the graph metrics as well as information related to those metrics.  
+For each sample, it contains the germline identity %, the values of the graph metrics as well as information related to those metrics. [Example shown: sample H33].  
+
 
 #### Global Graph Metrics  
 
@@ -350,14 +361,17 @@ For each sample, it contains the germline identity %, the values of the graph me
 knitr::include_graphics(path = "global_graph_metrics.png")
 ```
   
-It shows the graph metrics values for all the samples. If a sample has been discarded, the cause is provided.  
+It shows the graph metrics values for all the samples. If a sample has been discarded, the cause is provided. [Example shown: all samples from example dataset].  
+
+
 
 #### Graph Networks  
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "graph_network_H33.png")
 ```
   
-For each sample, it shows the graph network.  
+For each sample, it shows the graph network. [Example shown: sample H33].  
+
 
 
 
@@ -372,7 +386,8 @@ knitr::include_graphics(path = "convergence_score.png")
 knitr::include_graphics(path = "average_distance.png")
 ```
   
-If samples are classified into groups, the tool performs pairwise comparisons for all groups. This is performed independently for each of the graph metrics.  
+If samples are classified into groups, the tool performs pairwise comparisons for all groups. This is performed independently for each of the graph metrics. [Example shown: all samples from example dataset].  
+
 
 #### Discarded Samples  
 
