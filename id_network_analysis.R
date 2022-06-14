@@ -257,8 +257,8 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   adjacency = adjacency[which( adjacency$suppl_mu_f < adjacency$suppl_mu_t ), ]
   #who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0)
   #adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t
-  who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0) #[v]
-  adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t #[V]
+  who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0) 
+  adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t 
   if (include_jump){
     adjacency = adjacency[which(adjacency$suppl_mu_f==0 | adjacency$diff_n == (adjacency$length_t - adjacency$length_f) | (adjacency$suppl_mu_f<0 & adjacency$suppl_mu_t <= 0)), ]
     ind2keep = logical(nrow(adjacency))
@@ -276,23 +276,23 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
     adjacency = adjacency[which(adjacency$diff_n <= 1), ]
     adjacency = adjacency[which(abs(adjacency$suppl_mu_f - adjacency$suppl_mu_t) <= 1), ]
     
-    #remove positive pathways not connected to main nt var #[v]
-    ind2keep = adjacency$suppl_mu_f<=1 #[v]
-    ind2keep_curr = adjacency$suppl_mu_f==1 #[v]
-    for (i in 1:(max(adjacency$suppl_mu_f)-1)){ #[v]
-      ind2keep_curr =  adjacency$from %in% adjacency$to[ind2keep_curr] #[v]
-      ind2keep = ind2keep | ind2keep_curr #[v]
-    } #[v]
-    adjacency = adjacency[ind2keep,] #[v]
+    #remove positive pathways not connected to main nt var 
+    ind2keep = adjacency$suppl_mu_f<=1 
+    ind2keep_curr = adjacency$suppl_mu_f==1 
+    for (i in 1:(max(adjacency$suppl_mu_f)-1)){ 
+      ind2keep_curr =  adjacency$from %in% adjacency$to[ind2keep_curr] 
+      ind2keep = ind2keep | ind2keep_curr 
+    } 
+    adjacency = adjacency[ind2keep,] 
     
-    #remove negative pathways not connected to main nt var #[v]
-    ind2keep = adjacency$suppl_mu_t>=-1 #[v]
-    ind2keep_curr = adjacency$suppl_mu_t==-1 #[v]
-    for (i in 1:abs(min(adjacency$suppl_mu_t)+1)){ #[v]
-      ind2keep_curr =  adjacency$to %in% adjacency$from[ind2keep_curr] #[v]
-      ind2keep = ind2keep | ind2keep_curr #[v]
-    } #[v]
-    adjacency = adjacency[ind2keep,] #[v]
+    #remove negative pathways not connected to main nt var 
+    ind2keep = adjacency$suppl_mu_t>=-1 
+    ind2keep_curr = adjacency$suppl_mu_t==-1 
+    for (i in 1:abs(min(adjacency$suppl_mu_t)+1)){ 
+      ind2keep_curr =  adjacency$to %in% adjacency$from[ind2keep_curr] 
+      ind2keep = ind2keep | ind2keep_curr 
+    } 
+    adjacency = adjacency[ind2keep,] 
   }
   # create connection matrix --------------------
   #edges = adjacency[which((adjacency$diff_n != 0) | (adjacency$from == adjacency$to)), ]
