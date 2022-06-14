@@ -3,8 +3,8 @@ title: "IgIDivA"
 author: "Laura Zaragoza-Infante"
 date: "20/5/2022"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 
@@ -67,6 +67,7 @@ install.packages("igraph")
 install.packages("ggplot2")
 install.packages("ggpubr")
 install.packages("rstatix")
+install.packages("shinyvalidate")
 
 ```
 
@@ -89,6 +90,7 @@ Note: warnings might appear in RStudio indicating that the downloaded length of 
 ```r
 options(timeout = max(600, getOption("timeout")))
 ```  
+
 # Running `IgIDivA` as a `shiny` application
 
 In order to start the `shiny` app, the script `app.R` should be opened in the `R` session and the button `Run App` should be pressed.  
@@ -97,30 +99,52 @@ In order to start the `shiny` app, the script `app.R` should be opened in the `R
 knitr::include_graphics(path = "run_app.png")
 ```
 
-## Import data
+## Import data  
 
-In this tab users can import their data by selecting the directory where the data is stored, by pressing the **Choose input directory** button. 
+In this tab users can create the folders where the results will be stored and import their data. 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics(path = "upload_data_tab3.png")
-```
+knitr::include_graphics(path = "import_data_tab.png")
+```    
   
   
-The tool takes as input for each sample the [`tripr`](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler) output files "highly similar clonotype
+  
+  
+#### Import data: Select/Create Output folder
+  
+First, the user should specify the Results folder. For that, the user can go to the folder in their computer where they would like to store the output and press **copy address as text**:  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "copy_address_as_text.png")
+```  
+Then, the copied path should be pasted in the area **Enter desired path here**, together with a "/" and the name of the Results folder that the user wants to create [e.g. "Results"] (if a folder with this name does not exist, it will be created):  
+
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "output_folder_creation.png")
+```  
+
+
+Then, the **Create Results Path** should be pressed.  
+
+#### Import data: Choose input directory  
+
+The following step consists on the selection of the Input folder. Following the same approach as for the output folder, the user will enter in the path where the Input files are stored. The tool takes as input for each sample the [`tripr`](https://bio.tools/TRIP_-_T-cell_Receptor_Immunoglobulin_Profiler) output files "highly similar clonotype
 computation" and "grouped alignment nt",  in text format (.txt).  
 The input folder is selected:
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "select_input.png")
 ```
   
-Once the Input folder has been selected, users should verify it by pressing the button **Upload**.
+Once the Input folder address has been added, users should verify it by pressing the button **Upload**.
 Then users can choose which samples from the Input folder they want to include in the analysis.
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics(path = "choose_samples3.png")
+knitr::include_graphics(path = "choose_samples.png")
 ```
   
-Users should subsequently verify it by pressing the button **Verify**.
+Users should subsequently verify the selection by pressing the button **Verify**.  
 
-### Including groups to compare (optional)
+
+
+#### Import data: Including groups to compare (optional)
 In order to make comparisons between groups of samples, the user needs to create a `tab-delimited` file with two columns.  
 The first column should be named "sample_id" and should include the names of the samples.  
 The second column should include the name of the group that each sample belongs to. By default the name of the column is "group_name", but it can be modified
@@ -238,19 +262,18 @@ Once all the parameters have been selected, the button **Start** must be pressed
 knitr::include_graphics(path = "start_button.png")
 ``` 
   
-The button **Reset** can be used to start a new analysis, resetting the parameters and the output results.
+The button **Reset** can be used to start a new analysis, resetting the parameters [the output results will be reset when pressing the **Start** button.
   
   
+When the analysis is finished, a notification will appear with the message 'File conversion in progress...'. This conversion is performed to allow the visualizations to be visible in the **Visualize results** tab. Once it is ready, the user will be automatically redirected to the **Visualize Results** tab.
 
 ## Visualize Results  
 
-When the analysis is finished, the **Visualize Results** tab will become active. It might take some time since the analysis is completed until the visualizations are visible.
-
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics(path = "visualiza_results.png")
+knitr::include_graphics(path = "visualize_results.png")
 ```
   
-It shows all the different output results and it offers the possibility of selecting them and choosing which sample to visualize. In each tab, a *Download* button allows for each output to be downloaded independently. Moreover, all the output is saved locally in the user's working directory.
+This tab shows all the different output results and it offers the possibility of selecting them and choosing which sample to visualize. All the output results are saved locally in the user's previously selected output folder.
 
 #### Summary Calculations  
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
@@ -288,7 +311,7 @@ knitr::include_graphics(path = "aa_muts_main_nt_var_H33.png")
   
 It provides information of the replacement SHMs in the main nt var of each sample, together with the number of sequences carring each mutation.  
 
-#### Gobal Amino-acid Mutations Main Variant  
+#### Global Amino-acid Mutations Main Variant  
 
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics(path = "global_aa_muts_main_nt_var.png")
