@@ -12,8 +12,7 @@ source('main_block_selection.R')
 source('amino_acids_mutation.R')
 
 # read input files ----------------------------------------------------------------
-
-doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, save_path,include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE){
+doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, save_path,include_jump=TRUE, col_start = 5, col_end = 313, min_reads = 10, highly_sim_clonos = c(1), nodes_size_scaling = TRUE, include_aa_muts = TRUE, separate_graphs = FALSE){ 
   #for FR1 samples
   #col_start=59
   cys_pre_cdr3_length = 3
@@ -260,7 +259,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   who = which(adjacency$suppl_mu_f == 0 & adjacency$suppl_mu_t > 0) 
   adjacency[who, ]$diff_n = adjacency[who, ]$suppl_mu_t 
   if (include_jump){
-    adjacency = adjacency[which(adjacency$suppl_mu_f==0 | adjacency$diff_n == (adjacency$length_t - adjacency$length_f) | (adjacency$suppl_mu_f<0 & adjacency$suppl_mu_t <= 0)), ]
+    adjacency = adjacency[which(adjacency$suppl_mu_f==0 | adjacency$diff_n == (adjacency$length_t - adjacency$length_f) | (adjacency$suppl_mu_f<0 & adjacency$suppl_mu_t <= 0 & (adjacency$suppl_mu_t-adjacency$suppl_mu_f)==adjacency$diff_n)), ] 
     ind2keep = logical(nrow(adjacency))
     checked_ind = list()
     for (i in 1:nrow(adjacency)){
@@ -275,25 +274,52 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   else{
     adjacency = adjacency[which(adjacency$diff_n <= 1), ]
     adjacency = adjacency[which(abs(adjacency$suppl_mu_f - adjacency$suppl_mu_t) <= 1), ]
-    
-    #remove positive pathways not connected to main nt var 
-    ind2keep = adjacency$suppl_mu_f<=1 
-    ind2keep_curr = adjacency$suppl_mu_f==1 
-    for (i in 1:(max(adjacency$suppl_mu_f)-1)){ 
+  }
+  #remove positive pathways not connected to main nt var 
+  if (any(adjacency$suppl_mu_f>0)){ 
+    if (include_jump){ 
+      t = min(adjacency$suppl_mu_f[adjacency$suppl_mu_f>0]) 
+    } 
+    else{ 
+      t = 1 
+    } 
+    ind2keep = adjacency$suppl_mu_f<=t 
+    ind2keep_curr = adjacency$suppl_mu_f==t 
+    while (any(ind2keep_curr)){ 
       ind2keep_curr =  adjacency$from %in% adjacency$to[ind2keep_curr] 
       ind2keep = ind2keep | ind2keep_curr 
     } 
     adjacency = adjacency[ind2keep,] 
-    
-    #remove negative pathways not connected to main nt var 
-    ind2keep = adjacency$suppl_mu_t>=-1 
-    ind2keep_curr = adjacency$suppl_mu_t==-1 
-    for (i in 1:abs(min(adjacency$suppl_mu_t)+1)){ 
+  } 
+  # error if remove all pathways after previous step 
+  if (all(adjacency$suppl_mu_f<=0)){ 
+    mess = sprintf('The sample %s does not contain any connected extra nodes. The analysis has been stopped.',as.character(sample_id)) 
+    f=file(paste0(save_path,'/warning_message.txt')) 
+    writeLines(mess, f) 
+    close(f) 
+    warning(mess) 
+    id_and_error_type = c(round(identity*100,2),FALSE,FALSE,TRUE) 
+    names(id_and_error_type) = c("identity","type_error_no_extra_nodes","type_error_max_length_1","type_error_no_connected_extra_nodes") 
+    save(id_and_error_type,file=paste0(save_path,'/id_and_error_type.Rda'))
+    return(id_and_error_type) 
+  } 
+  
+  #remove negative pathways not connected to main nt var
+  if (any(adjacency$suppl_mu_t<0)){ 
+    if (include_jump){ 
+      t = max(adjacency$suppl_mu_t[adjacency$suppl_mu_t<0]) 
+    } 
+    else{ 
+      t = -1 
+    } 
+    ind2keep = adjacency$suppl_mu_t>=t 
+    ind2keep_curr = adjacency$suppl_mu_t==t 
+    while (any(ind2keep_curr)){ 
       ind2keep_curr =  adjacency$to %in% adjacency$from[ind2keep_curr] 
       ind2keep = ind2keep | ind2keep_curr 
     } 
     adjacency = adjacency[ind2keep,] 
-  }
+  } 
   # create connection matrix --------------------
   #edges = adjacency[which((adjacency$diff_n != 0) | (adjacency$from == adjacency$to)), ]
   edges = adjacency[which(adjacency$suppl_mu_f <= adjacency$suppl_mu_t), ]
@@ -370,9 +396,25 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
               row.names = FALSE, col.names = TRUE,quote = FALSE)
   
   nodes$Mutations_aa[nodes$suppl_mu==0]=""
-  tidy_net = tbl_graph(nodes = nodes, 
-                       edges = edges, 
-                       directed = TRUE)
+  if (separate_graphs){ 
+    tidy_net2 = tbl_graph(nodes = nodes[nodes$suppl_mu>=0,], 
+                          edges = edges[(edges$from %in% nodes[nodes$suppl_mu>0,]$id) | (edges$to %in% nodes[nodes$suppl_mu>0,]$id), ], 
+                          directed = TRUE) 
+    tidy_net1 = tbl_graph(nodes = nodes[nodes$suppl_mu<=0,], 
+                         edges = edges[(edges$from %in% nodes[nodes$suppl_mu<0,]$id) | (edges$to %in% nodes[nodes$suppl_mu<0,]$id), ], 
+                         directed = TRUE) 
+    tidy_net = tidy_net1 + tidy_net2 
+    rr = c(which(nodes[nodes$suppl_mu<=0,]$suppl_mu==0), 
+           sum(nodes$suppl_mu<=0)+which(nodes[nodes$suppl_mu>=0,]$suppl_mu==0)) 
+    rootlevel = c(1,1) 
+  } 
+  else{ 
+    tidy_net = tbl_graph(nodes = nodes, 
+                         edges = edges, 
+                         directed = TRUE)
+    rr = which(nodes$suppl_mu==min(nodes$suppl_mu)) 
+    rootlevel = c() 
+  } 
   
   set.seed(10)
   color_start = 3
@@ -412,10 +454,11 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   }
   
   options(ggrepel.max.overlaps = Inf)
-  rr = which(nodes$suppl_mu==min(nodes$suppl_mu))
+  
   if (nodes_size_scaling) {
     if (include_aa_muts) {
-      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+      
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all',rootlevel=rootlevel)) + 
         geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                       start_cap = circle(2, 'mm'),
                       end_cap = circle(3, 'mm'),
@@ -475,9 +518,14 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   }
   ggsave(paste0(save_path,'/',sample_id,'_ID.pdf'), width = 9.0, height = 9.0, units="in")
   #start graph metrics calculation -----------------------------
+  if (separate_graphs){ 
+    tidy_net = tbl_graph(nodes = nodes, 
+                         edges = edges, 
+                         directed = TRUE) 
+  } 
   d = degree(tidy_net, mode = "all", loops = FALSE, normalized = FALSE)
   avg_degree = mean(d)
-  avg_dist = mean_distance(tidy_net, 
+  avg_dist = mean_distance(tidy_net,
                            directed = TRUE,
                            unconnected = TRUE)
   tidy_net2 = as.data.frame(tidy_net)
@@ -570,7 +618,7 @@ get_less_mutations = function(joined_filtered,germline2,main,min_reads=10,col_st
     return(paste0( y, pos, x))
     
   }, less_expanded[, col_start:ncol(less_expanded)], germline2, colnames(germline2))
-  Mutations[str_detect(Mutations, "\\.")] = ""
+  
   if (NCOL(Mutations)==1){
     Mutations = t(Mutations)
   }
@@ -582,11 +630,11 @@ get_less_mutations = function(joined_filtered,germline2,main,min_reads=10,col_st
   less_expanded$Mutations = Mutations
   less_expanded = less_expanded[, .(cluster_id = paste(cluster_id, collapse = "+"),
                                     N = sum(N)), by = Mutations]
-  less_expanded = less_expanded[which(less_expanded$N >= min_reads), ]
+  
+  less_expanded = less_expanded[which(less_expanded$N >= min_reads & !str_detect(less_expanded$Mutations, "\\.")), ] 
   less_expanded$suppl_mut = -1 * str_count(less_expanded$Mutations, "\\-")
   less_expanded = as.data.table(less_expanded)
   less_expanded = less_expanded[ , c("Mutations", "suppl_mut", "N"), with = FALSE]
   less_expanded = less_expanded[order(suppl_mut,-N,Mutations),]
   return(less_expanded)
 }
-
