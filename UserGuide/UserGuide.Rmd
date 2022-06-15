@@ -205,6 +205,8 @@ knitr::include_graphics(path = "parameters_first.png")
     Tables with summary information [regarding nucleotide variants, sequences, mutational level,...] will be produced throughout the process. 
 - __Jumps between non-adjacent nodes__: <br/>
     If selected, jumps are allowed and nt vars with common SHMs differing by two or more SHMs will be included.
+- __Separate graphs__: <br/>
+    If selected, the graph network of each sample will be separated into two different graphs: on the left, the main nt var and the nt vars with fewer SHMs than the main nt var [the "less mutations pathway"] and on the right the main nt var and the nt vars with additional mutations. The different levels of mutations are aligned in both graph networks. This parameter affects only the visualization. By default this parameter is "off".
 - __Amino-acid mutations__: <br/>
     The analysis will include the analysis of SHMs at the amino acid level. Replacement mutations will be shown in the graph and tables with the replacement mutations will be produced.
 - __Size scaling of nodes proportional to reads__: <br/>
@@ -371,6 +373,11 @@ knitr::include_graphics(path = "graph_network_H33.png")
 ```
   
 For each sample, it shows the graph network. [Example shown: sample H33].  
+
+If the parameter "Separate graphs" is selected, the graph network gets separated in two [nt vars with fewer SHMs than the main nt var on the left and nt vars with additional SHMs on the right]. For example [sample H33]:
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics(path = "graph_network_H33_separated.png")
+```
 
 
 
