@@ -1,6 +1,6 @@
 source("id_network_analysis.R")
 
-iterate_do_graph = function(argument_file, save_path,include_jump=TRUE,col_start = 5,col_end = 313,min_reads = 10,highly_sim_clonos = c(1),nodes_size_scaling = TRUE,include_aa_muts = TRUE){
+iterate_do_graph = function(argument_file, save_path,include_jump=TRUE,col_start = 5,col_end = 313,min_reads = 10,highly_sim_clonos = c(1),nodes_size_scaling = TRUE,include_aa_muts = TRUE, separate_graphs = FALSE){ 
   output_path = paste0(save_path, "/Output")
   dir.create(output_path,showWarnings = FALSE)
   args = data.table::fread(argument_file,
@@ -53,7 +53,7 @@ iterate_do_graph = function(argument_file, save_path,include_jump=TRUE,col_start
         # no_muts_df <- rbind(no_muts_df, temp)
       }
       else if (!file.exists(paste0(save_path,'/',args$sample_id[i]))){
-        graph_info = doGraph(args$highly_sim_clonos_file[i],args$grouped_alignment_file[i],args$sample_id[i],save_path=save_path,include_jump=include_jump,col_start = col_start, col_end = col_end, min_reads = min_reads, highly_sim_clonos = highly_sim_clonos, nodes_size_scaling = nodes_size_scaling, include_aa_muts = include_aa_muts)
+        graph_info = doGraph(args$highly_sim_clonos_file[i],args$grouped_alignment_file[i],args$sample_id[i],save_path=save_path,include_jump=include_jump,col_start = col_start, col_end = col_end, min_reads = min_reads, highly_sim_clonos = highly_sim_clonos, nodes_size_scaling = nodes_size_scaling, include_aa_muts = include_aa_muts, separate_graphs = separate_graphs) 
       }
       else {
         graph_info = c(0/0,FALSE,FALSE,FALSE)
