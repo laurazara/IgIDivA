@@ -473,7 +473,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
         labs(subtitle = paste("Graph Network", sample_id))
     }
     else {
-      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all',rootlevel=rootlevel)) +
         geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                        start_cap = circle(2, 'mm'),
                        end_cap = circle(3, 'mm'),
@@ -489,7 +489,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
   }
   else {
     if (include_aa_muts) {
-      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all',rootlevel=rootlevel)) +
         geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                       start_cap = circle(2, 'mm'),
                       end_cap = circle(3, 'mm'),
@@ -503,7 +503,7 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
         labs(subtitle = paste("Graph Network", sample_id))
     }
     else {
-      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all')) +
+      ggraph(tidy_net, layout = layout_as_tree(tidy_net,root=rr,mode='all',rootlevel=rootlevel)) +
         geom_edge_link(edge_colour = "black", arrow = arrow(length = unit(1, 'mm')),
                        start_cap = circle(2, 'mm'),
                        end_cap = circle(3, 'mm'),
