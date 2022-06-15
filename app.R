@@ -36,11 +36,13 @@ ui <- fluidPage(
 
   tags$h1("IgIDivA", align = "center"),
   
+  
   navlistPanel(id = 'main',
     tabPanel("Import Data",
              
       textInput("output_folder", "Please provide a path where to save the final results", placeholder = "Enter desired path here",width = "100%"), 
            
+      
       actionButton("create", "Create Results Path", class = "btn-primary"),
              
              
@@ -49,8 +51,8 @@ ui <- fluidPage(
       br(),
       br(),
              
-
-      textInput("dir", "Choose input directory", placeholder = "Enter desired path here",width = "100%"),
+     
+      textInput("dir", "Choose input directory", placeholder = "Enter desired path here",width = "100%"), 
       
       br(),
       
@@ -133,10 +135,10 @@ ui <- fluidPage(
       br(),
       
       helper(
-        shiny::checkboxGroupInput("include", "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Metrics comparisons")),
+        shiny::checkboxGroupInput("include", "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Separate graphs","Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes","Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Metrics comparisons")), 
         colour = "red",
         type = "inline",
-        content = "Enter here explanatory text for the first checkbox group. You cannot have line breaks.Choose which options to include in the analysis. Summary tables produces tables throughout the process. The jumps between non-adjacent nodes allows that nt vars with common SHMs differing by two or more SHMs to be included in the analysis. If the option of amino acids mutations is selected, replacement mutations will be shown in the analysis and summary tables about the replacement mutations will be produced. Other option includes the possibility of having the size of the nodes of the graph networks proportional to the number of reads of the respective nucleotide variant. Other options consist on including graph metrics, graph networks and metric comparison in the analysis. For more information, please consult the IgIDivA UserGuide."
+        content = "Choose which options to include in the analysis. Summary tables produces tables throughout the process. The jumps between non-adjacent nodes allows that nt vars with common SHMs differing by two or more SHMs to be included in the analysis. If the option separate graphs is selected, the graph network of each sample will be separated into two different graphs: on the left, the main nt var and the nt vars with fewer SHMs than the main nt var [the less mutations pathway] and on the right the main nt var and the nt vars with additional mutations. If the option of amino acids mutations is selected, replacement mutations will be shown in the analysis and summary tables about the replacement mutations will be produced. Other option includes the possibility of having the size of the nodes of the graph networks proportional to the number of reads of the respective nucleotide variant. Other options consist on including graph metrics, graph networks and metric comparison in the analysis. For more information, please consult the IgIDivA UserGuide." 
       ),
       
       br(),
@@ -155,7 +157,8 @@ ui <- fluidPage(
       br(),
       br(), 
       
-      tags$strong("Resets input parameters to suggested values"),
+      
+      tags$strong("Resets input parameters to suggested values"), 
       
       br(),
       br(),
@@ -246,18 +249,17 @@ ui <- fluidPage(
 # Construct the Server
 server <- function(input, output, session) {
   observe_helpers()
-
-
-  observeEvent(
+  
+    observeEvent(
     ignoreNULL = TRUE,
     eventExpr = {
       input$upload
     },
     handlerExpr = {
       p = input$dir 
-      if( .Platform$OS.type == "windows" ){p <- str_replace_all(p,'\\\\','/')}
-      samples <- generate_input_file(p)
-      updateSelectInput(inputId = "samples", choices = samples[[3]])
+      if( .Platform$OS.type == "windows" ){p <- str_replace_all(p,'\\\\','/')} 
+      samples <- generate_input_file(p) 
+      updateSelectInput(inputId = "samples", choices = samples[[3]]) 
     }
   )
   
@@ -266,12 +268,14 @@ server <- function(input, output, session) {
     ga_files = NULL,
     hsim_files = NULL,
     id_hsim = NULL,
+
   )
   
-  files_old <- reactiveValues(
-    id_hsim = NULL,
+  files_old <- reactiveValues( 
+    id_hsim = NULL, 
   ) 
   
+ 
   observeEvent(
     ignoreNULL = TRUE,
     eventExpr = {
@@ -281,13 +285,13 @@ server <- function(input, output, session) {
       req(input$samples)
         showNotification("Nice!", type = "message")
         chosen_samples <- data.table::fread(paste0(getwd(), "/input_files.txt"), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-        chosen_samples <- chosen_samples[which(chosen_samples$sample_id %in% input$samples), ]
+        chosen_samples <- chosen_samples[which(chosen_samples$sample_id %in% input$samples), ] 
         write.table(chosen_samples, paste0(input$output_folder, "/chosen_samples.txt"), sep = "\t", dec = ".",
                     row.names = FALSE, col.names = TRUE,quote = FALSE)
         
-        files$hsim_files <- chosen_samples$highly_sim_clonos_file
-        files$ga_files <- chosen_samples$grouped_alignment_file
-        files$id_hsim <- chosen_samples$sample_id
+        files$hsim_files <- chosen_samples$highly_sim_clonos_file 
+        files$ga_files <- chosen_samples$grouped_alignment_file 
+        files$id_hsim <- chosen_samples$sample_id 
     }
   )
 
@@ -352,39 +356,39 @@ server <- function(input, output, session) {
     }
   )
   
-  observeEvent(
-    ignoreNULL = TRUE,
-    eventExpr = {
-      input$start
-    },
-    handlerExpr = {
+  observeEvent( 
+    ignoreNULL = TRUE, 
+    eventExpr = { 
+      input$start 
+    }, 
+    handlerExpr = { 
       
-      if (!is.null(files_old$id_hsim)){
-        for(i in 1:8) {
-          imap(files_old$id_hsim, ~{
-            removeTab(
-              paste0("samples", i),
-              target = paste(files_old$id_hsim[.y])
-            )
-          })
-        }
-        tabs <- c("Convergence Score", "End Nodes Density", "Max Path Length", "Max Mutations Length", "Average Degree", "Average Distance")
-        for (i in tabs) {
-          removeTab(
-            "metrics",
-            target = i
-          )
-        }
-        output$aa_mutations_main_var_global <- renderDataTable({})
-        output$aa_mutations_global <- renderDataTable({})
+      if (!is.null(files_old$id_hsim)){ 
+        for(i in 1:8) { 
+          imap(files_old$id_hsim, ~{ 
+            removeTab( 
+              paste0("samples", i), 
+              target = paste(files_old$id_hsim[.y]) 
+            ) 
+          }) 
+        } 
+        tabs <- c("Convergence Score", "End Nodes Density", "Max Path Length", "Max Mutations Length", "Average Degree", "Average Distance") 
+        for (i in tabs) { 
+          removeTab( 
+            "metrics", 
+            target = i 
+          ) 
+        } 
+        output$aa_mutations_main_var_global <- renderDataTable({}) 
+        output$aa_mutations_global <- renderDataTable({}) 
         output$graph_metrics_global <- renderDataTable({}) 
-        output$discard_samples <- renderDataTable({})
+        output$discard_samples <- renderDataTable({}) 
       } 
       
-      updateNavlistPanel(session, 'main', selected = "Visualize Results")
+      updateNavlistPanel(session, 'main', selected = "Visualize Results") 
       files_old$id_hsim = files$id_hsim 
-    }
-  )
+    } 
+  ) 
   
   observeEvent(
     ignoreNULL = TRUE,
@@ -397,10 +401,10 @@ server <- function(input, output, session) {
         detail = "This may take a while...",
         {
           for (i in 1:length(files$id_hsim)) {
-            doGraph(save_path = input$output_folder, files$hsim_files[i], files$ga_files[i], files$id_hsim[i], include_jump = ("Jumps between non-adjacent nodes" %in% input$include), col_start = input$col_start, col_end = input$col_end, min_reads = input$min_reads, highly_sim_clonos = clonotypes(), nodes_size_scaling = ("Size scaling of nodes proportional to reads" %in% input$include), include_aa_muts = ("Amino-acid mutations" %in% input$include))
+            doGraph(save_path = input$output_folder, files$hsim_files[i], files$ga_files[i], files$id_hsim[i], include_jump = ("Jumps between non-adjacent nodes" %in% input$include), col_start = input$col_start, col_end = input$col_end, min_reads = input$min_reads, highly_sim_clonos = clonotypes(), nodes_size_scaling = ("Size scaling of nodes proportional to reads" %in% input$include), include_aa_muts = ("Amino-acid mutations" %in% input$include), separate_graphs = ("Separate graphs" %in% input$include)) 
             incProgress(1 / length(files$id_hsim))
           }
-          iterate_do_graph(argument_file=paste0(input$output_folder, "/chosen_samples.txt"), save_path = input$output_folder, include_jump = ("Jumps between non-adjacent nodes" %in% input$include), col_start = input$col_start, col_end = input$col_end, min_reads = input$min_reads, highly_sim_clonos = clonotypes(), nodes_size_scaling = ("Size scaling of nodes proportional to reads" %in% input$include), include_aa_muts = ("Amino-acid mutations" %in% input$include))
+          iterate_do_graph(argument_file=paste0(input$output_folder, "/chosen_samples.txt"), save_path = input$output_folder, include_jump = ("Jumps between non-adjacent nodes" %in% input$include), col_start = input$col_start, col_end = input$col_end, min_reads = input$min_reads, highly_sim_clonos = clonotypes(), nodes_size_scaling = ("Size scaling of nodes proportional to reads" %in% input$include), include_aa_muts = ("Amino-acid mutations" %in% input$include), separate_graphs = ("Separate graphs" %in% input$include)) 
           #####################
           if(input_provided(input$samples_groups)){
           
@@ -443,7 +447,8 @@ server <- function(input, output, session) {
         output[[output_name]] <- renderDataTable(
           {.x},
           caption = paste("Summary Calculations", files$id_hsim[.y]),
-          options = list(paging=FALSE,searching=TRUE)
+          options = list(paging=FALSE,searching=TRUE) 
+       
         )
       })
     }
@@ -498,6 +503,7 @@ server <- function(input, output, session) {
            {.x},
            caption = paste("Extra Mutations Calculations", files$id_hsim[.y]),
            options = list(paging=FALSE,searching=TRUE)
+           
          )
        })
      }
@@ -551,7 +557,8 @@ server <- function(input, output, session) {
          output[[output_name]] <- renderDataTable(
            {.x},
            caption = paste("Less Mutations Calculations", files$id_hsim[.y]),
-           options = list(paging=FALSE,searching=TRUE)
+           options = list(paging=FALSE,searching=TRUE) 
+       
          )
        })
      }
@@ -606,7 +613,8 @@ server <- function(input, output, session) {
          output[[output_name]] <- renderDataTable(
            {.x},
            caption = paste("Mutations", files$id_hsim[.y]),
-           options = list(paging=FALSE,searching=TRUE)
+           options = list(paging=FALSE,searching=TRUE) 
+          
          )
        })
      }
@@ -661,7 +669,8 @@ server <- function(input, output, session) {
          output[[output_name]] <- renderDataTable(
            {.x},
            caption = paste("Amino - acid Mutations (main)", files$id_hsim[.y]),
-           options = list(paging=FALSE,searching=TRUE)
+           options = list(paging=FALSE,searching=TRUE) 
+          
          )
        })
      }
@@ -706,7 +715,8 @@ server <- function(input, output, session) {
            aa_mutations_main_var_global
          },
          caption = paste("Global Amino - acid Mutations (main)"),
-         options = list(paging=FALSE,searching=TRUE)
+         options = list(paging=FALSE,searching=TRUE) 
+         
        )
      }
    )
@@ -741,7 +751,8 @@ server <- function(input, output, session) {
          output[[output_name]] <- renderDataTable(
            {.x},
            caption = paste("Amino - acid Mutations (rest)", files$id_hsim[.y]),
-           options = list(paging=FALSE,searching=TRUE)
+           options = list(paging=FALSE,searching=TRUE) 
+           
          )
        })
      }
@@ -788,7 +799,8 @@ server <- function(input, output, session) {
            aa_mutations_global
          },
          caption = paste("Global Amino - acid Mutations (rest)"),
-         options = list(paging=FALSE,searching=TRUE)
+         options = list(paging=FALSE,searching=TRUE) 
+       
        )
      }
    )
@@ -807,7 +819,8 @@ server <- function(input, output, session) {
                    discard_samples
                },
                caption = paste("Discarded Samples"),
-               options = list(paging=FALSE,searching=TRUE)
+               options = list(paging=FALSE,searching=TRUE) 
+               
            )
        }
    )
@@ -839,7 +852,8 @@ server <- function(input, output, session) {
          output[[output_name]] <- renderDataTable(
            {.x},
            caption = paste("Graph Metrics", files$id_hsim[.y]),
-           options = list(paging=FALSE,searching=TRUE)
+           options = list(paging=FALSE,searching=TRUE) 
+          
          )
        })
      }
@@ -883,7 +897,8 @@ server <- function(input, output, session) {
            graph_metrics_global
          },
          caption = paste("Global Graph Metrics"),
-         options = list(paging=FALSE,searching=TRUE)
+         options = list(paging=FALSE,searching=TRUE) 
+         
        )
      }
    )
@@ -897,7 +912,7 @@ server <- function(input, output, session) {
        input$start
      },
      valueExpr = {
-       showNotification(id="conversion","File conversion in progress...", type = "message", duration = NULL)
+       showNotification(id="conversion","File conversion in progress...", type = "message", duration = NULL) 
        req("Graph networks" %in% input$include)
        graph_networks <- map2(files$id_hsim, input$output_folder, create_graph_network)
        graph_networks
@@ -911,13 +926,14 @@ server <- function(input, output, session) {
      },
      handlerExpr = {
        req(graph_networks())
-       removeNotification(id="conversion")
+       removeNotification(id="conversion") 
        iwalk(graph_networks(), ~{
          output_name <- paste0("graph_network_", .y)
          output[[output_name]] <- renderImage(
            {.x},
            deleteFile = FALSE
          )
+        
        })
      }
    )
@@ -934,6 +950,7 @@ server <- function(input, output, session) {
            insertTab(
              "samples8",
              tabPanel(paste(files$id_hsim[.y]),
+               
                imageOutput(
                  outputId = paste0("graph_network_", .y)
                )
@@ -959,6 +976,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("Convergence Score",
+           
            imageOutput(
              outputId = "convergence_score_comparison"
            )
@@ -971,6 +989,7 @@ server <- function(input, output, session) {
          },
          deleteFile = FALSE
        )
+       
      }
    )
  
@@ -984,6 +1003,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("End Nodes Density",
+           
            imageOutput(
              outputId = "end_nodes_density_comparison"
            )
@@ -996,6 +1016,7 @@ server <- function(input, output, session) {
          },
          deleteFile = FALSE
        )
+       
      }
    )
  
@@ -1009,6 +1030,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("Max Path Length",
+           
            imageOutput(
              outputId = "max_path_length_comparison"
            )
@@ -1021,6 +1043,7 @@ server <- function(input, output, session) {
          },
          deleteFile = FALSE
        )
+       
      }
    )
  
@@ -1034,6 +1057,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("Max Mutations Length",
+           
            imageOutput(
              outputId = "max_mutations_length_comparison"
            )
@@ -1046,6 +1070,7 @@ server <- function(input, output, session) {
          },
          deleteFile = FALSE
        )
+       
      }
    )
  
@@ -1059,6 +1084,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("Average Degree",
+           
            imageOutput(
              outputId = "average_degree_comparison"
            )
@@ -1071,6 +1097,7 @@ server <- function(input, output, session) {
          },
          deleteFile = FALSE
        )
+       
      }
   )
  
@@ -1084,6 +1111,7 @@ server <- function(input, output, session) {
        insertTab(
          "metrics",
          tabPanel("Average Distance",
+           
            imageOutput(
              outputId = "average_distance_comparison"
            )
@@ -1096,6 +1124,7 @@ server <- function(input, output, session) {
          },
         deleteFile = FALSE
       )
+     
      }
    )
  
@@ -1105,15 +1134,15 @@ server <- function(input, output, session) {
       input$reset
      },
      handlerExpr = {
-      updateNumericInput(inputId = "col_start", label = "Enter starting column [suggested: 5 (beginning of FR1 region), 23-59 (when using FR1 primers)]:", value = 5, step = 1) #"[L]"
-      updateNumericInput(inputId = "col_end", label = "Enter ending column [suggested: 313 (end of FR3 region)]:", value = 313, step = 1)
-      updateNumericInput(inputId = "min_reads", label = "Enter threshold minimum reads for the nodes [suggested: 10]:", value = 10, step = 1)
-      updateNumericInput(inputId = "p_thres", label = "Enter p-value threshold [suggested: 0.01 or 0.05]:", value = 0.05, step = 1)
+      updateNumericInput(inputId = "col_start", label = "Enter starting column [suggested: 5 (beginning of FR1 region), 23-59 (when using FR1 primers)]:", value = 5, step = 1) 
+      updateNumericInput(inputId = "col_end", label = "Enter ending column [suggested: 313 (end of FR3 region)]:", value = 313, step = 1) 
+      updateNumericInput(inputId = "min_reads", label = "Enter threshold minimum reads for the nodes [suggested: 10]:", value = 10, step = 1) 
+      updateNumericInput(inputId = "p_thres", label = "Enter p-value threshold [suggested: 0.01 or 0.05]:", value = 0.05, step = 1) 
       updateTextInput(inputId = "highly_sim_clonos", label = "Clonotypes to be taken into account for the analysis: Choose rows from the highly_sim_clonos_file and enter their indexes in comma-separated values", value = "1", placeholder = "Enter comma-separated numbers of rows")
-      updateCheckboxGroupInput(inputId = "include", label = "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Comparison metrics", "Metrics comparisons"))
+      updateCheckboxGroupInput(inputId = "include", label = "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Separate graphs","Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Comparison metrics", "Metrics comparisons")) 
       updateCheckboxGroupInput(inputId = "include_metrics", label = "Which graph metrics to show?", choices = c("Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance"), selected = c("Sample ID", "Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance"))
       updateCheckboxGroupInput(inputId = "compare_metrics", label = "Which metrics to compare?", choices = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance"), selected = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance"))
-
+      
       }
    )
 }
