@@ -3,8 +3,8 @@ title: "IgIDivA"
 author: "Laura Zaragoza-Infante"
 date: "20/5/2022"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 
@@ -140,7 +140,8 @@ Then users can choose which samples from the Input folder they want to include i
 knitr::include_graphics(path = "choose_samples.png")
 ```
   
-Users should subsequently verify the selection by pressing the button **Verify**.  
+Users should subsequently verify the selection by pressing the button **Verify**.
+Please, mind the order of the steps. If the output folder is changed, it is necessary to press again the **Verify** button for the selected samples.
 
 
 
@@ -402,5 +403,13 @@ If samples are classified into groups, the tool performs pairwise comparisons fo
 knitr::include_graphics(path = "discarded_samples.png")
 ```
   
-It provides the names of samples that have been discarded from the analysis [e.g. samples with no connections among nt vars].
+It provides the names of samples that have been discarded from the analysis [e.g. samples with no connections among nt vars].  
+  
+  
 
+
+#### That's all! If there is any issue, please feel free to open an issue in the [GitHub repository of IgIDivA](https://github.com/laurazara/IgIDivA/issues).  
+  
+  
+
+#### Thank you for using IgIDivA! Enjoy! :)
