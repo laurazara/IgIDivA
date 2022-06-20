@@ -185,8 +185,7 @@ knitr::include_graphics(path = "set_parameters.png")
 ```  
   
 - __Clonotypes to be taken into account for the analysis__: <br/>
-    Option for the user to choose the clonotypes to be included in the analysis. One approach would be, for example, to include the first [the most frequent] clonotype.
-    If more than one clonotype is selected, their indexes have to be separated by comma. The default is 1.  
+ Option for the user to choose the clonotypes to be included in the analysis. One approach would be, for example, to include the first [the most frequent] clonotype. The default is 1.
     
     
     ```{r, echo=FALSE, out.width='100%', fig.align='center'}
