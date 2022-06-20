@@ -130,7 +130,7 @@ ui <- fluidPage(
       
       br(),
       
-      textInput("highly_sim_clonos", "Clonotypes to be taken into account for the analysis: Choose rows from the highly_sim_clonos_file and enter their indexes in comma-separated values", value = "1", placeholder = "Enter comma-separated numbers of rows"),
+      textInput("highly_sim_clonos", "Clonotypes to be taken into account for the analysis: Choose the row from the highly_sim_clonos_file and enter its index [default = 1]", value = "1"),
       
       br(),
       
@@ -1138,7 +1138,7 @@ server <- function(input, output, session) {
       updateNumericInput(inputId = "col_end", label = "Enter ending column [suggested: 313 (end of FR3 region)]:", value = 313, step = 1) 
       updateNumericInput(inputId = "min_reads", label = "Enter threshold minimum reads for the nodes [suggested: 10]:", value = 10, step = 1) 
       updateNumericInput(inputId = "p_thres", label = "Enter p-value threshold [suggested: 0.01 or 0.05]:", value = 0.05, step = 1) 
-      updateTextInput(inputId = "highly_sim_clonos", label = "Clonotypes to be taken into account for the analysis: Choose rows from the highly_sim_clonos_file and enter their indexes in comma-separated values", value = "1", placeholder = "Enter comma-separated numbers of rows")
+      updateTextInput(inputId = "highly_sim_clonos", label = "Clonotypes to be taken into account for the analysis: Choose the row from the highly_sim_clonos_file and enter its index [default = 1]", value = "1")
       updateCheckboxGroupInput(inputId = "include", label = "Which should be included from the following?", choices = c("Summary tables", "Jumps between non-adjacent nodes", "Separate graphs","Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Graph networks", "Metrics comparisons"), selected = c("Jumps between non-adjacent nodes", "Amino-acid mutations", "Size scaling of nodes proportional to reads", "Graph metrics", "Summary tables", "Graph networks", "Comparison metrics", "Metrics comparisons")) 
       updateCheckboxGroupInput(inputId = "include_metrics", label = "Which graph metrics to show?", choices = c("Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance"), selected = c("Sample ID", "Main variant identity", "Relative convergence (reads)", "Most relevant pathway score", "Most relevant pathway (nodes)", "End nodes density", "Max path length", "Max mutations path length", "Total reads", "Average degree", "Average distance"))
       updateCheckboxGroupInput(inputId = "compare_metrics", label = "Which metrics to compare?", choices = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance"), selected = c("Convergence score", "End nodes density", "Max path length", "Max mutations length", "Average degree", "Average distance"))
