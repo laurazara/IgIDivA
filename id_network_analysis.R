@@ -31,15 +31,10 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
                                 header = TRUE, 
                                 sep = "\t", 
                                 stringsAsFactors = FALSE)
-  #colnames(alignment)[col_start:col_end] = as.character(1:(col_end-col_start+1))
-  #for FR1
-  colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
-  # find the germline ---------------------------------------------------------------
-  gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
-  gene_max_N = gene_count$V.GENE.and.allele[which(gene_count$N==max(gene_count$N))]
-  germline = alignment[which(alignment$V.GENE.and.allele==gene_max_N), ]
-  germline = germline[which(germline$cluster_id == "-"), ]
   
+  
+  colnames(alignment)[col_start:col_end] = as.character(colnames(alignment)[col_start:col_end])
+  alignment0 = alignment
   
   # pre processing ------------------------------------------------------------------
   
@@ -53,6 +48,13 @@ doGraph <- function(highly_sim_clonos_file,grouped_alignment_file,sample_id, sav
     related_clonos_final = unique(append(related_clonos_final, related_clonos_temp))
   }
   alignment = alignment[which(alignment$cluster_id %in% related_clonos_final), ]
+  
+  # find the germline ---------------------------------------------------------------
+  gene_count = alignment[,.(N=sum(N)),by=V.GENE.and.allele]
+  gene_max_N = gene_count$V.GENE.and.allele[which(gene_count$N==max(gene_count$N))]
+  germline = alignment0[which(alignment0$V.GENE.and.allele==gene_max_N), ]
+  germline = germline[which(germline$cluster_id == "-"), ]
+  
   joined_filtered = alignment[which(alignment$V.GENE.and.allele == germline$V.GENE.and.allele), ]
   
   # General calculations
