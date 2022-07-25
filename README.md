@@ -47,7 +47,7 @@ Alternatively, `IgIDivA` can be installed using a `conda` environment. We recomm
 conda env create -f IgIDivA.yml 
 conda activate IgIDivA
 R
-install.packages(c("shinyvalidate", "RGenetics","rstatix")
+install.packages(c("shinyvalidate", "RGenetics","rstatix"))
 q()
 Rscript app.R
 ```  
