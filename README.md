@@ -37,7 +37,22 @@ install.packages("shinyvalidate")
 
 ```
 
-All the scripts need to be downloaded in the same folder, and the input should be saved in a folder called `Input`
+All the scripts need to be downloaded in the same folder, and the input should be saved in a folder called `Input`  
 
-## Launching the app
-To run the app, open the script `app.R` in your `R` session and press the button `Run App`. 
+To run the app, open the script `app.R` in your `R` session and press the button `Run App`.   
+
+
+Alternatively, `IgIDivA` can be installed using a `conda` environment. We recommend to use [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to install all the dependencies. The dependencies can be found in .yml format [in the IgIDivA GitHub repository](https://github.com/laurazara/IgIDivA). The yml file and the `IgIDivA` scripts need to be stored in the working folder. After downloading all the files, a terminal should be opened and the following commands should be written:  
+```r
+conda env create -f IgIDivA.yml 
+conda activate IgIDivA
+R
+install.packages(c("shinyvalidate", "RGenetics","rstatix")
+q()
+Rscript app.R
+```  
+This will produce a url that can be copied in a web browser and will direct the user to the IgIDivA app.  
+
+
+
+
